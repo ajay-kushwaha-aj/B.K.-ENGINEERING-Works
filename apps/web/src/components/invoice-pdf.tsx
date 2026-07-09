@@ -13,7 +13,7 @@ Font.register({
 
 const styles = StyleSheet.create({
   page: {
-    fontFamily: "Helvetica",
+    fontFamily: "Inter",
     fontSize: 9,
     padding: 30,
     color: "#1e293b",
