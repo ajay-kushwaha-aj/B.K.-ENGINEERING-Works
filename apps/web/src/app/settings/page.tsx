@@ -65,6 +65,16 @@ export default function SettingsPage() {
           return;
         }
 
+        // If we are in mock mode (Supabase URL is placeholder/empty), do not attempt database fetch
+        const isPlaceholder = 
+          !process.env.NEXT_PUBLIC_SUPABASE_URL || 
+          process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder-url");
+
+        if (isPlaceholder) {
+          setIsLoading(false);
+          return;
+        }
+
         // Real Supabase load
         const { data, error } = await supabase
           .from("Company")
