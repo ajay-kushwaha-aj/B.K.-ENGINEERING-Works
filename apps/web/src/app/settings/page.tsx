@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CompanySchema, CompanyType } from "shared";
+import { CompanySchema, CompanyType, INDIAN_STATES } from "shared";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
@@ -41,6 +41,7 @@ export default function SettingsPage() {
       ifsc: "",
       upiId: "",
       invoicePrefix: "BK",
+      state: "Karnataka",
       termsDefault: "",
       logoUrl: "",
       signatureUrl: "",
@@ -233,18 +234,37 @@ export default function SettingsPage() {
                     <Input
                       label="GSTIN (Goods & Services Tax ID)"
                       placeholder="27AAAAA1111A1Z1"
+                      maxLength={15}
                       error={errors.gstin?.message}
                       {...register("gstin")}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Input
                       label="PAN (Permanent Account Number)"
                       placeholder="ABCDE1234F"
+                      maxLength={10}
                       error={errors.pan?.message}
                       {...register("pan")}
                     />
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-foreground">State *</label>
+                      <select
+                        {...register("state")}
+                        className="h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary cursor-pointer"
+                      >
+                        <option value="">-- Select State --</option>
+                        {INDIAN_STATES.map((st) => (
+                          <option key={st} value={st}>
+                            {st}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.state?.message && (
+                        <span className="text-xs text-danger font-medium mt-0.5">{errors.state?.message}</span>
+                      )}
+                    </div>
                     <Input
                       label="Invoice Number Prefix"
                       placeholder="BK"

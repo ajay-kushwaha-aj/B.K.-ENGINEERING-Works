@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CustomerSchema, CustomerType } from "shared";
+import { CustomerSchema, CustomerType, INDIAN_STATES } from "shared";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
@@ -340,12 +340,14 @@ export default function CustomersPage() {
                     <Input
                       label="GSTIN"
                       placeholder="27AAAAA1111A1Z1"
+                      maxLength={15}
                       error={errors.gstin?.message}
                       {...register("gstin")}
                     />
                     <Input
                       label="PAN"
                       placeholder="ABCDE1234F"
+                      maxLength={10}
                       error={errors.pan?.message}
                       {...register("pan")}
                     />
@@ -365,12 +367,23 @@ export default function CustomersPage() {
                       error={errors.email?.message}
                       {...register("email")}
                     />
-                    <Input
-                      label="State (for Tax Split) *"
-                      placeholder="e.g. Maharashtra"
-                      error={errors.state?.message}
-                      {...register("state")}
-                    />
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold">State (for Tax Split) *</label>
+                      <select
+                        {...register("state")}
+                        className="h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary cursor-pointer"
+                      >
+                        <option value="">-- Select State --</option>
+                        {INDIAN_STATES.map((st) => (
+                          <option key={st} value={st}>
+                            {st}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.state?.message && (
+                        <span className="text-xs text-danger font-medium mt-0.5">{errors.state?.message}</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -385,6 +398,7 @@ export default function CustomersPage() {
                     <Input
                       label="PIN Code"
                       placeholder="400001"
+                      maxLength={6}
                       error={errors.pinCode?.message}
                       {...register("pinCode")}
                     />

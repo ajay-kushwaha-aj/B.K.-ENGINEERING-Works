@@ -558,12 +558,14 @@ export default function WorkersPage() {
                       <Input
                         label="Aadhar Number"
                         placeholder="12-digit Aadhar"
+                        maxLength={12}
                         error={errors.aadharNumber?.message}
                         {...register("aadharNumber")}
                       />
                       <Input
                         label="PAN Card Number"
                         placeholder="10-digit PAN"
+                        maxLength={10}
                         error={errors.panNumber?.message}
                         {...register("panNumber")}
                       />

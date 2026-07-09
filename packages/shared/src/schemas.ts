@@ -1,9 +1,10 @@
 import { z } from "zod";
 
 // Helper regexes for Indian tax and banking fields
-export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+export const GSTIN_REGEX = /^[0-9a-zA-Z]{15}$/;
+export const PAN_REGEX = /^[0-9a-zA-Z]{10}$/;
 export const IFSC_REGEX = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+export const PIN_CODE_REGEX = /^[0-9]{6}$/;
 
 export const CompanySchema = z.object({
   id: z.string().optional(),
@@ -22,6 +23,7 @@ export const CompanySchema = z.object({
   ifsc: z.string().regex(IFSC_REGEX, "Invalid IFSC format").or(z.literal("")).nullable().optional(),
   upiId: z.string().nullable().optional(),
   invoicePrefix: z.string().min(1, "Invoice prefix is required").default("BK"),
+  state: z.string().min(1, "State is required").default("Karnataka"),
   termsDefault: z.string().nullable().optional(),
 });
 
@@ -37,7 +39,7 @@ export const CustomerSchema = z.object({
   email: z.string().email("Invalid email address").or(z.literal("")).nullable().optional(),
   state: z.string().min(1, "State is required (critical for GST logic)"),
   address: z.string().nullable().optional(),
-  pinCode: z.string().length(6, "PIN code must be 6 digits").or(z.literal("")).nullable().optional(),
+  pinCode: z.string().regex(PIN_CODE_REGEX, "PIN code must be exactly 6 digits").or(z.literal("")).nullable().optional(),
   contactPerson: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   status: z.enum(["ACTIVE", "INACTIVE", "BLOCKED"]).default("ACTIVE"),
@@ -187,8 +189,8 @@ export const WorkerSchema = z.object({
   phone: z.string().min(1, "Phone number is required"),
   email: z.string().email("Invalid email").or(z.literal("")).nullable().optional(),
   address: z.string().nullable().optional(),
-  aadharNumber: z.string().nullable().optional(),
-  panNumber: z.string().nullable().optional(),
+  aadharNumber: z.string().regex(/^[0-9]{12}$/, "Aadhar must be exactly 12 digits").or(z.literal("")).nullable().optional(),
+  panNumber: z.string().regex(PAN_REGEX, "PAN must be exactly 10 alphanumeric characters").or(z.literal("")).nullable().optional(),
   photoUrl: z.string().nullable().optional(),
   idProofUrl: z.string().nullable().optional(),
   joiningDate: z.union([z.date(), z.string()]),
