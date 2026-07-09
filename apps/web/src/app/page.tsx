@@ -8,6 +8,28 @@ export default function RootPage() {
   const router = useRouter();
 
   React.useEffect(() => {
+    // Initialize company settings with actual details from the physical invoice header if empty
+    const settings = localStorage.getItem("bk_company_settings");
+    if (!settings) {
+      const companyDetails = {
+        name: "B.K. ENGINEERING WORKS",
+        gstin: "29LOWPS6575M1Z6",
+        pan: "LOWPS6575M",
+        address: "No.06/1, Indira Nagar, Koppa, Mandya, Karnataka-571425.",
+        email: "bksinghakbk9890@gmail.com",
+        phone: "9890990036",
+        website: "https://bkengineering.com",
+        bankName: "State Bank of India",
+        bankAccount: "30001010101",
+        ifsc: "SBIN0000213",
+        upiId: "bksinghakbk9890@sbi",
+        invoicePrefix: "BK",
+        state: "Karnataka",
+        termsDefault: "1. Interest @ 18% p.a. will be charged for delayed payment beyond 30 days.\n2. Any dispute subject to local jurisdiction only.\n3. Goods once sold will not be taken back."
+      };
+      localStorage.setItem("bk_company_settings", JSON.stringify(companyDetails));
+    }
+
     // Check if user session exists in Local Storage
     const session = localStorage.getItem("bk_session");
     if (session) {

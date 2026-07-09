@@ -255,6 +255,23 @@ const initialCustomers: MockCustomer[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: "cust_3",
+    name: "JK Enterprises Sugar & Ltd",
+    companyName: "JK Enterprises Sugar & Ltd",
+    gstin: "29AARFJ2351E1Z8",
+    pan: "AARFJ2351E",
+    phone: "+91 9890990036",
+    email: "jkenterprises@gmail.com",
+    state: "Karnataka",
+    address: "mannapur to Curtorgi Road, yargal B.K Tq: Sindagi Dist Vijayapur",
+    pinCode: "586123",
+    contactPerson: "Manager",
+    notes: "Imported from physical invoice #27",
+    status: "ACTIVE",
+    createdAt: new Date("2025-02-08T00:00:00.000Z").toISOString(),
+    updatedAt: new Date("2025-02-08T00:00:00.000Z").toISOString(),
+  },
 ];
 
 const initialProducts: MockProduct[] = [
@@ -314,7 +331,46 @@ const initialProducts: MockProduct[] = [
   },
 ];
 
-const initialInvoices: MockInvoice[] = [];
+const initialInvoices: MockInvoice[] = [
+  {
+    id: "inv_27",
+    invoiceNumber: "BK-2025-000027",
+    customerId: "cust_3",
+    invoiceDate: "2025-02-08T00:00:00.000Z",
+    dueDate: "2025-03-10T00:00:00.000Z",
+    items: [
+      {
+        id: "item_27_1",
+        productId: null,
+        description: "Industrial Engineering Works / MS Pipeline Fabrication",
+        qty: 1,
+        unit: "Nos",
+        rate: 1596117.70,
+        discount: 0,
+        gstPercent: 18,
+        cgst: 175183.65,
+        sgst: 175183.65,
+        igst: 0,
+        amount: 1946485.00
+      }
+    ],
+    subTotal: 1596117.70,
+    discountTotal: 0,
+    cgstTotal: 175183.65,
+    sgstTotal: 175183.65,
+    igstTotal: 0,
+    grandTotal: 1946485.00,
+    amountInWords: "Nineteen Lakh Forty Six Thousand Four Hundred and Eighty Five Rupees Only",
+    notes: "Imported from handwritten Bill No. 27",
+    terms: "1. Payment should be made within 30 days.\n2. All disputes subject to local jurisdiction.",
+    status: "FINAL",
+    paymentStatus: "UNPAID",
+    cancelledAt: null,
+    quotationId: null,
+    createdAt: new Date("2025-02-08T00:00:00.000Z").toISOString(),
+    updatedAt: new Date("2025-02-08T00:00:00.000Z").toISOString(),
+  }
+];
 const initialPayments: MockPayment[] = [];
 const initialQuotations: MockQuotation[] = [];
 const initialVendors: MockVendor[] = [
