@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { getCurrentUser } from "@/lib/api-auth";
 
 export async function GET(
@@ -15,10 +14,7 @@ export async function GET(
 
     const { id: userId } = await params;
 
-    if (useMockDb()) {
-      const accesses = mockDb.getSiteAccessByUser(userId);
-      return NextResponse.json(accesses);
-    }
+    
 
     const accesses = await prisma.siteAccess.findMany({
       where: { userId },
@@ -60,24 +56,7 @@ export async function POST(
       ...(permissions || {})
     };
 
-    if (useMockDb()) {
-      // Remove any existing for this exact contract & site combination to prevent duplicate keys
-      const existing = mockDb.getSiteAccessByUser(userId);
-      const duplicate = existing.find(a => a.contractId === contractId && a.siteId === (siteId || null));
-      if (duplicate) {
-        mockDb.deleteSiteAccess(duplicate.id);
-      }
-
-      const newAccess = mockDb.addSiteAccess({
-        userId,
-        contractId,
-        siteId: siteId || null,
-        permissions: defaultPerms,
-        grantedBy: requester.id
-      });
-
-      return NextResponse.json(newAccess);
-    }
+    
 
     // Postgres path
     // Remove duplicate unique constraints first if any
@@ -122,10 +101,7 @@ export async function DELETE(
       return NextResponse.json({ error: "accessId query parameter is required" }, { status: 400 });
     }
 
-    if (useMockDb()) {
-      const deleted = mockDb.deleteSiteAccess(accessId);
-      return NextResponse.json({ success: deleted });
-    }
+    
 
     await prisma.siteAccess.delete({
       where: { id: accessId }

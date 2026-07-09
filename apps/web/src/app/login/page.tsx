@@ -22,7 +22,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [useMock, setUseMock] = React.useState(false);
+
 
   const {
     register,
@@ -51,32 +51,6 @@ export default function LoginPage() {
 
       if (profile.status === "INACTIVE") {
         throw new Error("Your account is deactivated. Please contact the administrator.");
-      }
-
-      // Check if Supabase keys are placeholder
-      const isPlaceholder = 
-        !process.env.NEXT_PUBLIC_SUPABASE_URL || 
-        process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder-url");
-
-      if (isPlaceholder || useMock) {
-        // Fallback Mock Login for local testing
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        
-        // Save mock session
-        localStorage.setItem("bk_session", JSON.stringify({
-          user: { 
-            id: profile.id, 
-            email: profile.email, 
-            name: profile.name,
-            role: profile.role,
-            status: profile.status
-          },
-          token: data.email, // Use email as the mock token
-          isMock: true
-        }));
-        
-        router.push("/dashboard");
-        return;
       }
 
       // Real Supabase Authentication
@@ -159,21 +133,7 @@ export default function LoginPage() {
                 {...register("password")}
               />
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="use-mock"
-                    name="use-mock"
-                    type="checkbox"
-                    checked={useMock}
-                    onChange={(e) => setUseMock(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-secondary focus:ring-secondary cursor-pointer"
-                  />
-                  <label htmlFor="use-mock" className="ml-2 block text-sm text-muted-foreground cursor-pointer select-none">
-                    Use Mock Login (For Local Sandbox Verification)
-                  </label>
-                </div>
-              </div>
+
 
               <Button type="submit" className="w-full" isLoading={isLoading}>
                 Log In
@@ -184,9 +144,7 @@ export default function LoginPage() {
             <span className="text-xs text-muted-foreground">
               Single-Owner Portal &bull; Phase 0 Foundation Version
             </span>
-            <div className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-950/20 dark:text-amber-400 p-2 rounded border border-amber-200/50">
-              Tip: If you do not have Supabase set up yet, check the &quot;Use Mock Login&quot; box and log in with any email/password.
-            </div>
+
           </CardFooter>
         </Card>
       </div>

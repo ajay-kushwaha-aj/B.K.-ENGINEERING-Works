@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { SalarySlipSchema } from "shared";
 
 export async function GET(
@@ -10,17 +9,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    if (useMockDb()) {
-      const slip = mockDb.getSalarySlipById(id);
-      if (!slip) {
-        return NextResponse.json({ error: "Salary slip not found" }, { status: 404 });
-      }
-      const result = {
-        ...slip,
-        worker: mockDb.getWorkerById(slip.workerId),
-      };
-      return NextResponse.json(result);
-    }
+    
 
     const slip = await prisma.salarySlip.findUnique({
       where: { id },
@@ -58,34 +47,7 @@ export async function PUT(
 
     const data = json;
 
-    if (useMockDb()) {
-      const updated = mockDb.updateSalarySlip(id, {
-        paymentStatus: data.paymentStatus,
-        paymentDate: data.paymentDate ? new Date(data.paymentDate).toISOString() : null,
-        paymentMode: data.paymentMode || null,
-        // Also allow updating general details if the user edited them
-        ...(data.daysPresent !== undefined && { daysPresent: Number(data.daysPresent) }),
-        ...(data.daysAbsent !== undefined && { daysAbsent: Number(data.daysAbsent) }),
-        ...(data.overtimeHours !== undefined && { overtimeHours: Number(data.overtimeHours) }),
-        ...(data.basicSalary !== undefined && { basicSalary: Number(data.basicSalary) }),
-        ...(data.overtimeAmount !== undefined && { overtimeAmount: Number(data.overtimeAmount) }),
-        ...(data.allowances !== undefined && { allowances: Number(data.allowances) }),
-        ...(data.bonus !== undefined && { bonus: Number(data.bonus) }),
-        ...(data.deductions !== undefined && { deductions: Number(data.deductions) }),
-        ...(data.deductionNotes !== undefined && { deductionNotes: data.deductionNotes || null }),
-        ...(data.netPay !== undefined && { netPay: Number(data.netPay) }),
-      });
-
-      if (!updated) {
-        return NextResponse.json({ error: "Salary slip not found" }, { status: 404 });
-      }
-
-      const result = {
-        ...updated,
-        worker: mockDb.getWorkerById(updated.workerId),
-      };
-      return NextResponse.json(result);
-    }
+    
 
     const payload: any = {};
     if (data.paymentStatus !== undefined) payload.paymentStatus = data.paymentStatus;
@@ -124,15 +86,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    if (useMockDb()) {
-      const mockStore = global as any;
-      const idx = (mockStore.mockSalarySlips || []).findIndex((s: any) => s.id === id);
-      if (idx === -1) {
-        return NextResponse.json({ error: "Salary slip not found" }, { status: 404 });
-      }
-      mockStore.mockSalarySlips.splice(idx, 1);
-      return NextResponse.json({ message: "Salary slip deleted successfully" });
-    }
+    
 
     await prisma.salarySlip.delete({
       where: { id },

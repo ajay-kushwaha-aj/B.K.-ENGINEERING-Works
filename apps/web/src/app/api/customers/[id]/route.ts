@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { CustomerSchema } from "shared";
 
 export async function GET(
@@ -10,13 +9,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    if (useMockDb()) {
-      const customer = mockDb.getCustomerById(id);
-      if (!customer) {
-        return NextResponse.json({ error: "Customer not found" }, { status: 404 });
-      }
-      return NextResponse.json(customer);
-    }
+    
 
     const customer = await prisma.customer.findUnique({
       where: { id },
@@ -45,13 +38,7 @@ export async function PUT(
       return NextResponse.json({ error: result.error.format() }, { status: 400 });
     }
 
-    if (useMockDb()) {
-      const updated = mockDb.updateCustomer(id, result.data as any);
-      if (!updated) {
-        return NextResponse.json({ error: "Customer not found" }, { status: 404 });
-      }
-      return NextResponse.json(updated);
-    }
+    
 
     const updated = await prisma.customer.update({
       where: { id },

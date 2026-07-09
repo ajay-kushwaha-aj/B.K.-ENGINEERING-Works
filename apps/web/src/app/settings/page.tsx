@@ -70,28 +70,6 @@ export default function SettingsPage() {
     const loadCompanySettings = async () => {
       setIsLoading(true);
       try {
-        // Try to load from Local Storage first (covers mock mode)
-        const mockSettings = localStorage.getItem("bk_company_settings");
-        if (mockSettings) {
-          const parsed = JSON.parse(mockSettings);
-          reset(parsed);
-          setLogoPreview(parsed.logoUrl || null);
-          setSignaturePreview(parsed.signatureUrl || null);
-          setSealPreview(parsed.sealUrl || null);
-          setIsLoading(false);
-          return;
-        }
-
-        // If we are in mock mode (Supabase URL is placeholder/empty), do not attempt database fetch
-        const isPlaceholder = 
-          !process.env.NEXT_PUBLIC_SUPABASE_URL || 
-          process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder-url");
-
-        if (isPlaceholder) {
-          setIsLoading(false);
-          return;
-        }
-
         // Real Supabase load
         const { data, error } = await supabase
           .from("Company")
@@ -142,37 +120,27 @@ export default function SettingsPage() {
     setStatusMsg(null);
 
     try {
-      // Save to local storage for quick mockup testing
-      localStorage.setItem("bk_company_settings", JSON.stringify(data));
+      // Upsert company details into database
+      const companyPayload = {
+        ...data,
+        updatedAt: new Date().toISOString(),
+      };
 
-      // Try database saving
-      const isPlaceholder = 
-        !process.env.NEXT_PUBLIC_SUPABASE_URL || 
-        process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder-url");
-
-      if (!isPlaceholder) {
-        // Upsert company details into database
-        const companyPayload = {
-          ...data,
-          updatedAt: new Date().toISOString(),
-        };
-
-        let dbError;
-        if (data.id) {
-          const { error } = await supabase
-            .from("Company")
-            .update(companyPayload)
-            .eq("id", data.id);
-          dbError = error;
-        } else {
-          const { error } = await supabase
-            .from("Company")
-            .insert([{ ...companyPayload, id: `comp_${Date.now()}` }]);
-          dbError = error;
-        }
-
-        if (dbError) throw dbError;
+      let dbError;
+      if (data.id) {
+        const { error } = await supabase
+          .from("Company")
+          .update(companyPayload)
+          .eq("id", data.id);
+        dbError = error;
+      } else {
+        const { error } = await supabase
+          .from("Company")
+          .insert([{ ...companyPayload, id: `comp_${Date.now()}` }]);
+        dbError = error;
       }
+
+      if (dbError) throw dbError;
 
       setStatusMsg({ type: "success", text: "Company settings saved successfully!" });
     } catch (err: any) {
@@ -526,15 +494,30 @@ export default function SettingsPage() {
                     type="button" 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => {
+                    onClick={async () => {
                       if (confirm("Are you sure you want to revert changes?")) {
-                        const mockSettings = localStorage.getItem("bk_company_settings");
-                        if (mockSettings) {
-                          const parsed = JSON.parse(mockSettings);
-                          reset(parsed);
-                          setLogoPreview(parsed.logoUrl || null);
-                          setSignaturePreview(parsed.signatureUrl || null);
-                          setSealPreview(parsed.sealUrl || null);
+                        setIsLoading(true);
+                        try {
+                          const { data } = await supabase
+                            .from("Company")
+                            .select("*")
+                            .limit(1)
+                            .single();
+                          if (data) {
+                            reset(data);
+                            setLogoPreview(data.logoUrl || null);
+                            setSignaturePreview(data.signatureUrl || null);
+                            setSealPreview(data.sealUrl || null);
+                          } else {
+                            reset({});
+                            setLogoPreview(null);
+                            setSignaturePreview(null);
+                            setSealPreview(null);
+                          }
+                        } catch (err) {
+                          console.error(err);
+                        } finally {
+                          setIsLoading(false);
                         }
                       }
                     }}

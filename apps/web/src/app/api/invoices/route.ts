@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { InvoiceSchema } from "shared";
 
 export async function GET(request: Request) {
@@ -9,18 +8,7 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
     const customerId = searchParams.get("customerId");
 
-    if (useMockDb()) {
-      let invoices = mockDb.getInvoices();
-      if (status) invoices = invoices.filter(i => i.status === status);
-      if (customerId) invoices = invoices.filter(i => i.customerId === customerId);
-      
-      // Inject customer profiles into response for UI display
-      const result = invoices.map(inv => ({
-        ...inv,
-        customer: mockDb.getCustomerById(inv.customerId),
-      }));
-      return NextResponse.json(result);
-    }
+    
 
     const where: any = {};
     if (status) where.status = status;
@@ -52,10 +40,7 @@ export async function POST(request: Request) {
 
     const inputData = result.data;
 
-    if (useMockDb()) {
-      const added = mockDb.addInvoice(inputData as any);
-      return NextResponse.json(added, { status: 201 });
-    }
+    
 
     // Run transaction block for sequential invoice numbering
     const invoice = await prisma.$transaction(async (tx) => {

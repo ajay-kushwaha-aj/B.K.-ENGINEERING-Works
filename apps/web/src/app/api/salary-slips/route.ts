@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { SalarySlipSchema } from "shared";
 
 export async function GET(request: Request) {
@@ -11,28 +10,7 @@ export async function GET(request: Request) {
     const year = searchParams.get("year") ? parseInt(searchParams.get("year") || "", 10) : null;
     const paymentStatus = searchParams.get("paymentStatus") || "";
 
-    if (useMockDb()) {
-      let filtered = mockDb.getSalarySlips();
-      if (workerId) {
-        filtered = filtered.filter(s => s.workerId === workerId);
-      }
-      if (month) {
-        filtered = filtered.filter(s => s.month === month);
-      }
-      if (year) {
-        filtered = filtered.filter(s => s.year === year);
-      }
-      if (paymentStatus) {
-        filtered = filtered.filter(s => s.paymentStatus === paymentStatus);
-      }
-
-      // Inject worker info for UI display
-      const result = filtered.map(slip => ({
-        ...slip,
-        worker: mockDb.getWorkerById(slip.workerId),
-      }));
-      return NextResponse.json(result);
-    }
+    
 
     const where: any = {};
     if (workerId) {
@@ -73,32 +51,7 @@ export async function POST(request: Request) {
 
     const inputData = result.data;
 
-    if (useMockDb()) {
-      const added = mockDb.addSalarySlip({
-        workerId: inputData.workerId,
-        month: inputData.month,
-        year: inputData.year,
-        daysPresent: Number(inputData.daysPresent),
-        daysAbsent: Number(inputData.daysAbsent),
-        overtimeHours: Number(inputData.overtimeHours),
-        basicSalary: Number(inputData.basicSalary),
-        overtimeAmount: Number(inputData.overtimeAmount),
-        allowances: Number(inputData.allowances),
-        bonus: Number(inputData.bonus),
-        deductions: Number(inputData.deductions),
-        deductionNotes: inputData.deductionNotes || null,
-        netPay: Number(inputData.netPay),
-        paymentStatus: inputData.paymentStatus as any,
-        paymentDate: inputData.paymentDate ? new Date(inputData.paymentDate).toISOString() : null,
-        paymentMode: inputData.paymentMode as any || null,
-      });
-      // Append worker info to match DB payload
-      const fullAdded = {
-        ...added,
-        worker: mockDb.getWorkerById(added.workerId),
-      };
-      return NextResponse.json(fullAdded, { status: 201 });
-    }
+    
 
     // PostgreSQL path using transaction for sequence safety:
     const salarySlip = await prisma.$transaction(async (tx) => {

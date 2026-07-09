@@ -1,21 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
 
-    if (useMockDb()) {
-      let quotations = mockDb.getQuotations();
-      if (status) quotations = quotations.filter((q) => q.status === status);
-      const result = quotations.map((q) => ({
-        ...q,
-        customer: mockDb.getCustomerById(q.customerId),
-      }));
-      return NextResponse.json(result);
-    }
+    
 
     const where: any = {};
     if (status) where.status = status;
@@ -40,16 +31,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "customerId, items, and grandTotal are required" }, { status: 400 });
     }
 
-    if (useMockDb()) {
-      const quotation = mockDb.addQuotation({
-        customerId,
-        date: date || new Date().toISOString().split("T")[0],
-        items,
-        grandTotal: Number(grandTotal),
-        status: qStatus || "DRAFT",
-      });
-      return NextResponse.json({ ...quotation, customer: mockDb.getCustomerById(customerId) }, { status: 201 });
-    }
+    
 
     const quotation = await prisma.$transaction(async (tx) => {
       const currentYear = new Date().getFullYear();

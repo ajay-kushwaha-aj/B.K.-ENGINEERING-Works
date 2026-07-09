@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 
 export async function GET() {
   try {
-    if (useMockDb()) {
-      const purchases = mockDb.getPurchases().map((p) => ({
-        ...p,
-        vendor: mockDb.getVendorById(p.vendorId),
-      }));
-      return NextResponse.json(purchases);
-    }
+    
     const purchases = await prisma.purchase.findMany({
       include: { vendor: true },
       orderBy: { purchaseDate: "desc" },
@@ -30,17 +23,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "vendorId, items, gstTotal, and grandTotal are required" }, { status: 400 });
     }
 
-    if (useMockDb()) {
-      const purchase = mockDb.addPurchase({
-        vendorId,
-        purchaseDate: purchaseDate || new Date().toISOString().split("T")[0],
-        items,
-        gstTotal: Number(gstTotal),
-        grandTotal: Number(grandTotal),
-        paymentStatus: paymentStatus || "UNPAID",
-      });
-      return NextResponse.json({ ...purchase, vendor: mockDb.getVendorById(vendorId) }, { status: 201 });
-    }
+    
 
     // Real DB Path
     const purchase = await prisma.$transaction(async (tx) => {

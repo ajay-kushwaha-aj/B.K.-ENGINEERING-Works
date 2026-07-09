@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { getCurrentUser, hasSiteAccess } from "@/lib/api-auth";
 
 export async function GET(request: Request) {
@@ -19,15 +18,11 @@ export async function GET(request: Request) {
 
     // Load site to get contractId for permission check
     let contractId = "";
-    if (useMockDb()) {
-      const site = mockDb.getSiteById(siteId);
-      if (!site) return NextResponse.json({ error: "Site not found" }, { status: 404 });
-      contractId = site.contractId;
-    } else {
+    
       const site = await prisma.site.findUnique({ where: { id: siteId } });
       if (!site) return NextResponse.json({ error: "Site not found" }, { status: 404 });
       contractId = site.contractId;
-    }
+    
 
     // Enforce site-wise permission check
     const allowed = await hasSiteAccess(requester.id, requester.role, contractId, siteId, "viewProgress");
@@ -35,10 +30,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Forbidden: You do not have access to this site's details" }, { status: 403 });
     }
 
-    if (useMockDb()) {
-      const sheets = mockDb.getMeasurementSheetsBySite(siteId);
-      return NextResponse.json(sheets);
-    }
+    
 
     // Postgres path
     const sheets = await prisma.measurementSheet.findMany({
@@ -68,15 +60,11 @@ export async function POST(request: Request) {
 
     // Load site to get contractId for permission check
     let contractId = "";
-    if (useMockDb()) {
-      const site = mockDb.getSiteById(siteId);
-      if (!site) return NextResponse.json({ error: "Site not found" }, { status: 404 });
-      contractId = site.contractId;
-    } else {
+    
       const site = await prisma.site.findUnique({ where: { id: siteId } });
       if (!site) return NextResponse.json({ error: "Site not found" }, { status: 404 });
       contractId = site.contractId;
-    }
+    
 
     // Enforce site-wise permission check for editing measurements
     const allowed = await hasSiteAccess(requester.id, requester.role, contractId, siteId, "measurement");
@@ -84,18 +72,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Forbidden: You do not have permission to log measurements for this site" }, { status: 403 });
     }
 
-    if (useMockDb()) {
-      const newSheet = mockDb.addMeasurementSheet({
-        siteId,
-        boqItem,
-        description: description || null,
-        qty: Number(qty),
-        rate: Number(rate),
-        createdByUserId: requester.id,
-        createdByName: requester.name
-      });
-      return NextResponse.json(newSheet);
-    }
+    
 
     // Postgres path
     const newSheet = await prisma.measurementSheet.create({

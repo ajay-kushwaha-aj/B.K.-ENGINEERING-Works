@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { AttendanceSchema } from "shared";
 
 export async function GET(
@@ -17,10 +16,7 @@ export async function GET(
       return NextResponse.json({ error: "Invalid month or year" }, { status: 400 });
     }
 
-    if (useMockDb()) {
-      const records = mockDb.getAttendance(workerId, month, year);
-      return NextResponse.json(records);
-    }
+    
 
     // Calculate start and end date for filtering in PostgreSQL
     const startDate = new Date(year, month - 1, 1);
@@ -61,16 +57,7 @@ export async function POST(
 
     const data = result.data;
 
-    if (useMockDb()) {
-      const saved = mockDb.saveAttendance({
-        workerId: data.workerId,
-        date: new Date(data.date).toISOString(),
-        status: data.status as any,
-        overtimeHours: Number(data.overtimeHours),
-        notes: data.notes || null,
-      });
-      return NextResponse.json(saved, { status: 201 });
-    }
+    
 
     // PostgreSQL Upsert logic:
     // First query if there is an existing attendance record for this worker on this date

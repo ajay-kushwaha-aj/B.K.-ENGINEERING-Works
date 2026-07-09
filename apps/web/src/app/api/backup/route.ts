@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    if (useMockDb()) {
-      const data = mockDb.dumpDatabase();
-      return NextResponse.json(data);
-    }
+
 
     // Real database dump
     const [
@@ -58,10 +54,7 @@ export async function POST(request: Request) {
   try {
     const json = await request.json();
 
-    if (useMockDb()) {
-      mockDb.restoreDatabase(json);
-      return NextResponse.json({ success: true });
-    }
+
 
     // Real DB restore using transaction (destructive overwrite)
     await prisma.$transaction(async (tx) => {

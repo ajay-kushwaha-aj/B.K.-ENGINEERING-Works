@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: productId } = await params;
-    if (useMockDb()) {
-      const movements = mockDb.getStockMovementsByProduct(productId);
-      return NextResponse.json(movements);
-    }
+    
     const movements = await prisma.stockMovement.findMany({
       where: { productId },
       orderBy: { createdAt: "desc" },
@@ -29,15 +25,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "type and qty are required" }, { status: 400 });
     }
 
-    if (useMockDb()) {
-      const move = mockDb.addStockMovement({
-        productId,
-        type,
-        qty: Number(qty),
-        reason: reason || null,
-      });
-      return NextResponse.json(move, { status: 201 });
-    }
+    
 
     // Real DB
     const move = await prisma.$transaction(async (tx) => {

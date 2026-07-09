@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 
 export async function POST(request: Request) {
   try {
@@ -16,10 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
     }
 
-    if (useMockDb()) {
-      const count = mockDb.bulkMarkPresent(date);
-      return NextResponse.json({ count });
-    }
+
 
     // PostgreSQL path:
     // Get all ACTIVE workers

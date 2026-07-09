@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { getCurrentUser } from "@/lib/api-auth";
 
 export async function GET(request: Request) {
@@ -13,29 +12,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const contractId = searchParams.get("contractId");
 
-    if (useMockDb()) {
-      let sites = mockDb.getSites();
-      if (contractId) {
-        sites = sites.filter(s => s.contractId === contractId);
-      }
-
-      if (requester.role === "ADMIN") {
-        return NextResponse.json(sites);
-      }
-
-      // Filter for Site Manager
-      const accesses = mockDb.getSiteAccessByUser(requester.id);
-      // Check if they have access to all sites in this contract (siteId === null)
-      const hasAllAccess = accesses.some(a => a.contractId === contractId && a.siteId === null);
-      if (hasAllAccess) {
-        return NextResponse.json(sites);
-      }
-
-      // Otherwise filter by specific allowed siteIds
-      const allowedSiteIds = accesses.map(a => a.siteId).filter(Boolean);
-      const filtered = sites.filter(s => allowedSiteIds.includes(s.id));
-      return NextResponse.json(filtered);
-    }
+    
 
     // Postgres path
     if (requester.role === "ADMIN") {
@@ -92,14 +69,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name and Contract ID are required" }, { status: 400 });
     }
 
-    if (useMockDb()) {
-      const newSite = mockDb.addSite({
-        name,
-        contractId,
-        location: location || null
-      });
-      return NextResponse.json(newSite);
-    }
+    
 
     // Postgres path
     const newSite = await prisma.site.create({

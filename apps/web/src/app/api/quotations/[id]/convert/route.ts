@@ -1,24 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
-    if (useMockDb()) {
-      const invoice = mockDb.convertQuotationToInvoice(id);
-      if (!invoice) {
-        return NextResponse.json(
-          { error: "Quotation not found or not in APPROVED status" },
-          { status: 400 }
-        );
-      }
-      return NextResponse.json({
-        ...invoice,
-        customer: mockDb.getCustomerById(invoice.customerId),
-      }, { status: 201 });
-    }
+    
 
     // Real DB path
     const quotation = await prisma.quotation.findUnique({

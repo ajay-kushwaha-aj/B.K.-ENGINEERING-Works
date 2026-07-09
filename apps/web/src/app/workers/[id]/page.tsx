@@ -21,6 +21,7 @@ import {
   AlertCircle,
   User as UserIcon,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { WorkerType, AttendanceType } from "shared";
 
@@ -98,6 +99,9 @@ export default function WorkerDetailPage() {
   const [localOT, setLocalOT] = React.useState<Record<string, number>>({});
   // Track which OT keys have pending debounced saves
   const [pendingOT, setPendingOT] = React.useState<Record<string, number>>({});
+
+  // Selected day for editing details
+  const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
 
   // ─── Fetch worker ─────────────────────────────────────────────
   const fetchWorker = React.useCallback(async () => {
@@ -434,7 +438,7 @@ export default function WorkerDetailPage() {
                   <div className="grid grid-cols-7">
                     {/* Empty cells before first day */}
                     {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-                      <div key={`empty-${i}`} className="min-h-[120px] border-r border-b border-border/50 bg-muted/20 last:border-r-0" />
+                      <div key={`empty-${i}`} className="min-h-[85px] border-r border-b border-border/50 bg-muted/20 last:border-r-0" />
                     ))}
 
                     {days.map((day, idx) => {
@@ -446,68 +450,51 @@ export default function WorkerDetailPage() {
                       const saveState = saveStatus[dateStr] || "idle";
                       const isToday = dateStr === todayStr;
                       const isFuture = day > today;
-                      // Determine column position for border-r suppression
                       const colPosition = (firstDayOfWeek + idx) % 7;
                       const isLastInRow = colPosition === 6;
-                      const notes = record?.notes || "";
 
                       return (
                         <div
                           key={dateStr}
-                          className={`min-h-[120px] p-2 border-b border-border/50 transition-all ${isLastInRow ? "" : "border-r border-border/50"} ${cfg.bg} ${isToday ? "ring-2 ring-inset ring-secondary/60" : ""} ${isFuture ? "opacity-50" : ""}`}
+                          onClick={() => {
+                            if (!isFuture) {
+                              setSelectedDay(day);
+                            }
+                          }}
+                          className={`min-h-[85px] p-2.5 border-b border-border/50 transition-all flex flex-col justify-between ${
+                            isLastInRow ? "" : "border-r border-border/50"
+                          } ${cfg.bg} ${isToday ? "ring-2 ring-inset ring-secondary/60" : ""} ${
+                            isFuture 
+                              ? "opacity-40 cursor-not-allowed" 
+                              : "cursor-pointer hover:bg-slate-100/50 dark:hover:bg-slate-800/40"
+                          }`}
                         >
                           {/* Day number + save state */}
-                          <div className="flex items-start justify-between mb-1.5">
-                            <span className={`text-sm font-bold leading-none ${isToday ? "text-secondary" : "text-foreground"}`}>
+                          <div className="flex items-start justify-between">
+                            <span className={`text-xs font-bold leading-none ${isToday ? "text-secondary" : "text-muted-foreground"}`}>
                               {day.getDate()}
-                              {isToday && <span className="ml-1 text-[9px] font-bold text-secondary uppercase tracking-wider">Today</span>}
+                              {isToday && <span className="ml-1 text-[8px] font-bold text-secondary uppercase tracking-wider">Today</span>}
                             </span>
                             <span>
-                              {saveState === "saving" && <Loader2 className="animate-spin text-muted-foreground" size={12} />}
-                              {saveState === "saved"  && <CheckCircle2 className="text-emerald-500" size={12} />}
-                              {saveState === "error"  && <AlertCircle className="text-red-500" size={12} />}
+                              {saveState === "saving" && <Loader2 className="animate-spin text-muted-foreground" size={10} />}
+                              {saveState === "saved"  && <CheckCircle2 className="text-emerald-500" size={10} />}
+                              {saveState === "error"  && <AlertCircle className="text-red-500" size={10} />}
                             </span>
                           </div>
 
-                          {/* Status badge */}
-                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold border mb-2 ${cfg.bg} ${cfg.border} ${cfg.text}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                            {cfg.label}
-                          </span>
-
-                          {/* Status select */}
-                          <select
-                            value={status}
-                            disabled={isFuture}
-                            onChange={e => {
-                              const newStatus = e.target.value;
-                              saveDayAttendance(dateStr, newStatus, ot);
-                            }}
-                            className="w-full text-[11px] h-7 rounded-md border border-border bg-background/80 px-1.5 focus:outline-none cursor-pointer font-semibold mb-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            <option value="PRESENT">Present</option>
-                            <option value="HALF_DAY">Half Day</option>
-                            <option value="ABSENT">Absent</option>
-                            <option value="LEAVE">Leave</option>
-                            <option value="HOLIDAY">Holiday</option>
-                          </select>
-
-                          {/* Overtime input */}
-                          <div className="flex items-center gap-1">
-                            <Clock size={10} className="text-muted-foreground shrink-0" />
-                            <span className="text-[10px] text-muted-foreground">OT:</span>
-                            <input
-                              type="number"
-                              min="0"
-                              max="12"
-                              step="0.5"
-                              disabled={isFuture}
-                              value={ot}
-                              onFocus={e => e.target.select()}
-                              onChange={e => handleOTChange(dateStr, parseFloat(e.target.value) || 0, status)}
-                              className="text-[11px] h-6 w-12 text-center rounded border border-border bg-background/80 px-1 focus:outline-none font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                            />
-                            <span className="text-[10px] text-muted-foreground">hrs</span>
+                          {/* Status + OT info */}
+                          <div className="flex flex-col gap-1 mt-auto">
+                            <span className={`inline-flex items-center gap-1 self-start px-1.5 py-0.5 rounded-md text-[9px] font-extrabold border ${cfg.bg} ${cfg.border} ${cfg.text}`}>
+                              <span className={`w-1 h-1 rounded-full ${cfg.dot}`} />
+                              {cfg.label}
+                            </span>
+                            
+                            {ot > 0 && (
+                              <span className="inline-flex items-center gap-0.5 self-start px-1 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 text-[8px] font-extrabold border border-amber-200 dark:border-amber-900/30">
+                                <Clock size={8} className="shrink-0" />
+                                +{ot}h
+                              </span>
+                            )}
                           </div>
                         </div>
                       );
@@ -519,7 +506,7 @@ export default function WorkerDetailPage() {
                       const remainder = totalCells % 7;
                       if (remainder === 0) return null;
                       return Array.from({ length: 7 - remainder }).map((_, i) => (
-                        <div key={`trail-${i}`} className="min-h-[120px] border-r border-b border-border/50 bg-muted/20 last:border-r-0" />
+                        <div key={`trail-${i}`} className="min-h-[85px] border-r border-b border-border/50 bg-muted/20 last:border-r-0" />
                       ));
                     })()}
                   </div>
@@ -544,6 +531,121 @@ export default function WorkerDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Attendance Editing Modal ────────────────────────────── */}
+      {selectedDay && (() => {
+        const dateStr = toLocalDateStr(selectedDay);
+        const record = attMap[dateStr];
+        const status = record?.status || "ABSENT";
+        const ot = localOT[dateStr] ?? (Number(record?.overtimeHours) || 0);
+        const isToday = dateStr === todayStr;
+
+        return (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="p-5 border-b border-border flex items-center justify-between">
+                <div>
+                  <h3 className="font-extrabold text-foreground text-sm uppercase tracking-wider">Mark Attendance</h3>
+                  <p className="text-sm font-bold text-muted-foreground mt-0.5">
+                    {selectedDay.toLocaleDateString("en-IN", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    {isToday && <span className="ml-2 text-[9px] bg-secondary/15 text-secondary px-1.5 py-0.5 rounded-full font-bold uppercase">Today</span>}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setSelectedDay(null)} 
+                  className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              
+              <div className="p-5 space-y-4">
+                {/* Status Select Options */}
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Attendance Status</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {Object.entries(STATUS_CONFIG).map(([key, cfg]) => {
+                      const isSelected = status === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => {
+                            saveDayAttendance(dateStr, key, ot);
+                          }}
+                          className={`flex items-center justify-between p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                            isSelected 
+                              ? `${cfg.bg} ${cfg.border} ${cfg.text} ring-2 ring-offset-2 ring-offset-card ring-primary/40`
+                              : "bg-background border-border hover:bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
+                            {cfg.label}
+                          </span>
+                          {isSelected && <CheckCircle2 size={16} className="shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Overtime Selector */}
+                <div className="space-y-2 pt-2 border-t border-border/60">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Overtime Hours</label>
+                    <span className="text-xs font-extrabold text-foreground">{ot} hours</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={ot <= 0}
+                      onClick={() => {
+                        const newVal = Math.max(0, ot - 0.5);
+                        handleOTChange(dateStr, newVal, status);
+                      }}
+                      className="w-10 h-10 rounded-xl border border-border bg-background flex items-center justify-center font-bold text-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="0"
+                      max="24"
+                      step="0.5"
+                      value={ot}
+                      onFocus={e => e.target.select()}
+                      onChange={e => {
+                        const newVal = parseFloat(e.target.value) || 0;
+                        handleOTChange(dateStr, newVal, status);
+                      }}
+                      className="flex-1 text-center h-10 rounded-xl border border-border bg-background font-bold text-sm focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      disabled={ot >= 24}
+                      onClick={() => {
+                        const newVal = Math.min(24, ot + 0.5);
+                        handleOTChange(dateStr, newVal, status);
+                      }}
+                      className="w-10 h-10 rounded-xl border border-border bg-background flex items-center justify-center font-bold text-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-5 bg-muted/40 border-t border-border flex justify-end">
+                <Button onClick={() => setSelectedDay(null)} variant="primary" size="sm">
+                  Done
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </Navigation>
   );
 }

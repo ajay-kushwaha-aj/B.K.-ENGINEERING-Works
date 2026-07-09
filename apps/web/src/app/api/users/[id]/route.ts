@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { getCurrentUser } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
 
@@ -29,21 +28,7 @@ export async function PUT(
     const json = await request.json();
     const { name, phone, role, status } = json;
 
-    if (useMockDb()) {
-      const existing = mockDb.getUserById(id);
-      if (!existing) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-
-      const updated = mockDb.updateUser(id, {
-        ...(name !== undefined && { name }),
-        ...(phone !== undefined && { phone: phone || null }),
-        ...(role !== undefined && { role }),
-        ...(status !== undefined && { status }),
-      });
-
-      return NextResponse.json(updated);
-    }
+    
 
     // Postgres path
     const existing = await prisma.user.findUnique({ where: { id } });

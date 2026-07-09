@@ -262,27 +262,6 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation Bar (Alternative Quick Access) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-900 border-t border-slate-800 text-white flex items-center justify-around z-20 px-2 pb-safe shadow-lg print:hidden">
-        {navItems.filter(item => !item.disabled || item.href === "/settings").map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.name}
-              href={item.disabled ? "#" : item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-1 ${
-                item.disabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
-              } ${isActive ? "text-secondary" : "text-slate-400 hover:text-white"}`}
-            >
-              <Icon size={20} className={isActive ? "scale-110 transition-transform" : ""} />
-              <span className="text-[10px] mt-1 font-medium">{item.name}</span>
-            </Link>
-          );
-        })}
-      </nav>
-      {/* Mobile spacing helper so bottom nav doesn't cover content */}
-      <div className="md:hidden h-16 w-full flex-shrink-0 print:hidden" />
     </div>
   );
 };

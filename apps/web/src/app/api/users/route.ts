@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mockDb, useMockDb } from "@/lib/mock-db";
 import { getCurrentUser } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
 
@@ -23,15 +22,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 
-    if (useMockDb()) {
-      const users = mockDb.getUsers();
-      // Map to include siteAccess relations
-      const mapped = users.map(u => ({
-        ...u,
-        siteAccess: mockDb.getSiteAccessByUser(u.id)
-      }));
-      return NextResponse.json(mapped);
-    }
+    
 
     const users = await prisma.user.findMany({
       include: {
@@ -67,23 +58,7 @@ export async function POST(request: Request) {
 
     const targetRole = role === "ADMIN" ? "ADMIN" : "SITE_MANAGER";
 
-    if (useMockDb()) {
-      // Check duplicate
-      const existing = mockDb.getUserByEmail(email);
-      if (existing) {
-        return NextResponse.json({ error: "User already exists with this email" }, { status: 400 });
-      }
-
-      const newUser = mockDb.addUser({
-        email,
-        name,
-        phone: phone || null,
-        role: targetRole,
-        status: "ACTIVE",
-        createdById: requester.id
-      });
-      return NextResponse.json(newUser);
-    }
+    
 
     // Check duplicate in DB
     const existing = await prisma.user.findUnique({ where: { email } });
