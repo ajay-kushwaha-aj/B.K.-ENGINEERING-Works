@@ -1,0 +1,355 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Used for non-pooling connection if needed
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Company {
+  id            String   @id @default(cuid())
+  name          String
+  gstin         String?
+  pan           String?
+  address       String?
+  email         String?
+  phone         String?
+  website       String?
+  logoUrl       String?
+  signatureUrl  String?
+  sealUrl       String?
+  bankName      String?
+  bankAccount   String?
+  ifsc          String?
+  upiId         String?
+  invoicePrefix String   @default("BK")
+  termsDefault  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(OWNER)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  OWNER
+}
+
+model Customer {
+  id            String   @id @default(cuid())
+  name          String
+  companyName   String?
+  gstin         String?
+  pan           String?
+  phone         String?
+  email         String?
+  state         String
+  address       String?
+  pinCode       String?
+  contactPerson String?
+  notes         String?
+  status        CustomerStatus @default(ACTIVE)
+  invoices      Invoice[]
+  quotations    Quotation[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+model Vendor {
+  id           String    @id @default(cuid())
+  name         String
+  gstin        String?
+  phone        String?
+  email        String?
+  address      String?
+  bankDetails  String?
+  purchases    Purchase[]
+  createdAt    DateTime  @default(now())
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  hsnCode       String?
+  gstPercent    Decimal
+  unit          String
+  price         Decimal
+  purchasePrice Decimal?
+  weight        Decimal?
+  stockQty      Decimal  @default(0)
+  minStock      Decimal  @default(0)
+  category      String?
+  imageUrl      String?
+  status        ProductStatus @default(ACTIVE)
+  invoiceItems  InvoiceItem[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  invoiceNumber  String   @unique   // BK-2026-000001, sequential
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id])
+  invoiceDate    DateTime
+  dueDate        DateTime?
+  items          InvoiceItem[]
+  subTotal       Decimal
+  discountTotal  Decimal  @default(0)
+  cgstTotal      Decimal  @default(0)
+  sgstTotal      Decimal  @default(0)
+  igstTotal      Decimal  @default(0)
+  grandTotal     Decimal
+  amountInWords  String
+  notes          String?
+  terms          String?
+  status         InvoiceStatus @default(DRAFT)
+  paymentStatus  PaymentStatus @default(UNPAID)
+  cancelledAt    DateTime?
+  quotationId    String?
+  quotation      Quotation? @relation(fields: [quotationId], references: [id])
+  payments       Payment[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum InvoiceStatus {
+  DRAFT
+  FINAL
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+  PARTIAL
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  description String
+  qty         Decimal
+  unit        String
+  rate        Decimal
+  discount    Decimal  @default(0)
+  gstPercent  Decimal
+  cgst        Decimal  @default(0)
+  sgst        Decimal  @default(0)
+  igst        Decimal  @default(0)
+  amount      Decimal
+}
+
+model Quotation {
+  id              String   @id @default(cuid())
+  quotationNumber String   @unique
+  customerId      String
+  customer        Customer @relation(fields: [customerId], references: [id])
+  date            DateTime
+  items           Json      // mirrors InvoiceItem shape
+  grandTotal      Decimal
+  status          QuotationStatus @default(DRAFT)
+  invoices        Invoice[]
+  createdAt       DateTime @default(now())
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+  CONVERTED
+}
+
+model WorkOrder {
+  id             String   @id @default(cuid())
+  woNumber       String   @unique
+  customerId     String
+  siteName       String
+  location       String?
+  startDate      DateTime?
+  completionDate DateTime?
+  projectManager String?
+  description    String?
+  status         WOStatus @default(OPEN)
+  estimatedCost  Decimal?
+  actualCost     Decimal?
+  createdAt      DateTime @default(now())
+}
+
+enum WOStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  invoiceId     String
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id])
+  amount        Decimal
+  mode          PaymentMode
+  transactionId String?
+  paymentDate   DateTime
+  createdAt     DateTime @default(now())
+}
+
+enum PaymentMode {
+  CASH
+  CHEQUE
+  BANK_TRANSFER
+  UPI
+  ONLINE
+}
+
+model Purchase {
+  id            String   @id @default(cuid())
+  vendorId      String
+  vendor        Vendor   @relation(fields: [vendorId], references: [id])
+  purchaseDate  DateTime
+  items         Json
+  gstTotal      Decimal
+  grandTotal    Decimal
+  paymentStatus PaymentStatus @default(UNPAID)
+  createdAt     DateTime @default(now())
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String
+  amount      Decimal
+  date        DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model StockMovement {
+  id         String   @id @default(cuid())
+  productId  String
+  type       StockMoveType
+  qty        Decimal
+  reason     String?
+  createdAt  DateTime @default(now())
+}
+
+enum StockMoveType {
+  IN
+  OUT
+  ADJUSTMENT
+  OPENING
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  customerId  String?
+  type        String   // Agreement, Drawing, PO, GST Certificate, Photo, etc.
+  fileUrl     String
+  fileName    String
+  uploadedAt  DateTime @default(now())
+}
+
+model Worker {
+  id              String   @id @default(cuid())
+  name            String
+  fatherName      String?
+  designation     String        // e.g. Welder, Fitter, Helper, Supervisor
+  department      String?       // e.g. Fabrication, Erection, Maintenance
+  phone           String
+  email           String?
+  address         String?
+  aadharNumber    String?
+  panNumber       String?
+  photoUrl        String?
+  idProofUrl      String?
+  joiningDate     DateTime
+  status          WorkerStatus  @default(ACTIVE)   // ACTIVE, INACTIVE, ON_LEAVE, TERMINATED
+  salaryType      SalaryType                        // MONTHLY, DAILY, CONTRACT
+  basicSalary     Decimal
+  bankName        String?
+  bankAccount     String?
+  ifsc            String?
+  upiId           String?
+  salarySlips     SalarySlip[]
+  attendance      Attendance[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum WorkerStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+enum SalaryType {
+  MONTHLY
+  DAILY
+  CONTRACT
+}
+
+model Attendance {
+  id            String   @id @default(cuid())
+  workerId      String
+  worker        Worker   @relation(fields: [workerId], references: [id])
+  date          DateTime
+  status        AttendanceStatus   // PRESENT, ABSENT, HALF_DAY, LEAVE, HOLIDAY
+  overtimeHours Decimal @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LEAVE
+  HOLIDAY
+}
+
+model SalarySlip {
+  id              String   @id @default(cuid())
+  slipNumber      String   @unique      // e.g. BK-SAL-2026-07-0001
+  workerId        String
+  worker          Worker   @relation(fields: [workerId], references: [id])
+  month           Int                    // 1-12
+  year            Int
+  daysPresent     Decimal
+  daysAbsent      Decimal
+  overtimeHours   Decimal  @default(0)
+  basicSalary     Decimal
+  overtimeAmount  Decimal  @default(0)
+  allowances      Decimal  @default(0)   // travel, food, site allowance etc.
+  bonus           Decimal  @default(0)
+  deductions      Decimal  @default(0)   // advance, PF, ESI, loan, absence deduction
+  deductionNotes  String?
+  netPay          Decimal
+  paymentStatus   PaymentStatus @default(UNPAID)   // reuse existing enum: PAID/UNPAID/PARTIAL
+  paymentDate     DateTime?
+  paymentMode     PaymentMode?          // reuse existing enum: CASH/BANK_TRANSFER/UPI etc.
+  generatedAt     DateTime @default(now())
+}
+
