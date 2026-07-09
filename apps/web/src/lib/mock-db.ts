@@ -12,6 +12,7 @@ export interface MockCustomer {
   pinCode: string | null;
   contactPerson: string | null;
   notes: string | null;
+  termsDefault?: string | null;
   status: "ACTIVE" | "INACTIVE" | "BLOCKED";
   createdAt: string;
   updatedAt: string;
@@ -234,6 +235,7 @@ const initialCustomers: MockCustomer[] = [
     pinCode: "587316",
     contactPerson: "Mr. R. K. Patil",
     notes: "Primary shutdown maintenance client",
+    termsDefault: "1. Payments are due within 15 days of invoice date.\n2. Goods once sold will not be taken back.",
     status: "ACTIVE",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -251,6 +253,7 @@ const initialCustomers: MockCustomer[] = [
     pinCode: "413102",
     contactPerson: "Mr. Suresh Pawar",
     notes: "Sugar plant erection works",
+    termsDefault: "1. 50% advance along with purchase order.\n2. Balance within 30 days after installation.",
     status: "ACTIVE",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -268,6 +271,7 @@ const initialCustomers: MockCustomer[] = [
     pinCode: "586123",
     contactPerson: "Manager",
     notes: "Imported from physical invoice #27",
+    termsDefault: "1. Payment should be made within 30 days.\n2. All disputes subject to local jurisdiction.",
     status: "ACTIVE",
     createdAt: new Date("2025-02-08T00:00:00.000Z").toISOString(),
     updatedAt: new Date("2025-02-08T00:00:00.000Z").toISOString(),

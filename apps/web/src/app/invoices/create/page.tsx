@@ -128,6 +128,21 @@ export default function CreateInvoicePage() {
     loadOptions();
   }, []);
 
+  // Update invoice terms when a customer is selected
+  React.useEffect(() => {
+    if (!selectedCustomerId) return;
+    const cust = customers.find(c => c.id === selectedCustomerId);
+    if (cust) {
+      if (cust.termsDefault) {
+        setTerms(cust.termsDefault);
+      } else if (companySettings?.termsDefault) {
+        setTerms(companySettings.termsDefault);
+      } else {
+        setTerms("");
+      }
+    }
+  }, [selectedCustomerId, customers, companySettings]);
+
   const activeCustomer = customers.find(c => c.id === selectedCustomerId);
 
   // Calculate totals

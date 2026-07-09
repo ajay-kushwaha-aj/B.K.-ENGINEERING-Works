@@ -41,6 +41,7 @@ export const CustomerSchema = z.object({
   contactPerson: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   status: z.enum(["ACTIVE", "INACTIVE", "BLOCKED"]).default("ACTIVE"),
+  termsDefault: z.string().nullable().optional(),
 });
 
 export type CustomerType = z.infer<typeof CustomerSchema>;

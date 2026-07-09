@@ -75,6 +75,7 @@ export default function CustomersPage() {
       pinCode: "",
       contactPerson: "",
       notes: "",
+      termsDefault: "",
       status: "ACTIVE",
     });
     setIsModalOpen(true);
@@ -408,6 +409,14 @@ export default function CustomersPage() {
                       </select>
                     </div>
                   </div>
+
+                  <Textarea
+                    label="Default Invoice Terms & Conditions"
+                    placeholder="Enter default terms that will be pre-filled when billing this customer..."
+                    error={errors.termsDefault?.message}
+                    {...register("termsDefault")}
+                    rows={4}
+                  />
 
                   <Textarea
                     label="Internal Notes"

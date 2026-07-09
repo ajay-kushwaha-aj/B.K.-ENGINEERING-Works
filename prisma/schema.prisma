@@ -55,6 +55,7 @@ model Customer {
   pinCode       String?
   contactPerson String?
   notes         String?
+  termsDefault  String?
   status        CustomerStatus @default(ACTIVE)
   invoices      Invoice[]
   quotations    Quotation[]
