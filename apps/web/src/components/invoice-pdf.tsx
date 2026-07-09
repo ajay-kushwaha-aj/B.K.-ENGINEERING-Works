@@ -322,6 +322,22 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
 
   const isIntrastate = customer.state.trim().toLowerCase() === company.state?.trim().toLowerCase();
 
+  const subTotalVal = Number(invoice.subTotal);
+  const cgstTotalVal = Number(invoice.cgstTotal);
+  const sgstTotalVal = Number(invoice.sgstTotal);
+  const igstTotalVal = Number(invoice.igstTotal);
+  const totalTaxVal = cgstTotalVal + sgstTotalVal + igstTotalVal;
+  const totalBeforeRound = subTotalVal + totalTaxVal;
+  const finalAmount = Number(invoice.grandTotal);
+  const roundOffVal = finalAmount - totalBeforeRound;
+
+  // Extract GST rates from items
+  const gstPercentages = Array.from(new Set(invoice.items?.map((item: any) => Number(item.gstPercent)) || []));
+  const isSingleGst = gstPercentages.length === 1;
+  const cgstRate = isSingleGst ? (Number(gstPercentages[0]) / 2) : 9;
+  const sgstRate = isSingleGst ? (Number(gstPercentages[0]) / 2) : 9;
+  const igstRate = isSingleGst ? Number(gstPercentages[0]) : 18;
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -431,7 +447,7 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
           </View>
           <View style={styles.totalsBox}>
             <View style={styles.totalRow}>
-              <Text style={[styles.metaLabel, styles.totalRowText]}>Sub Total (Taxable):</Text>
+              <Text style={[styles.metaLabel, styles.totalRowText]}>Total Amount Before Tax:</Text>
               <Text style={styles.totalRowText}>₹{Number(invoice.subTotal).toFixed(2)}</Text>
             </View>
             {Number(invoice.discountTotal) > 0 && (
@@ -443,22 +459,30 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
             {isIntrastate ? (
               <>
                 <View style={styles.totalRow}>
-                  <Text style={[styles.metaLabel, styles.totalRowText]}>CGST Total:</Text>
+                  <Text style={[styles.metaLabel, styles.totalRowText]}>CGST ({cgstRate}%):</Text>
                   <Text style={styles.totalRowText}>₹{Number(invoice.cgstTotal).toFixed(2)}</Text>
                 </View>
                 <View style={styles.totalRow}>
-                  <Text style={[styles.metaLabel, styles.totalRowText]}>SGST Total:</Text>
+                  <Text style={[styles.metaLabel, styles.totalRowText]}>SGST ({sgstRate}%):</Text>
                   <Text style={styles.totalRowText}>₹{Number(invoice.sgstTotal).toFixed(2)}</Text>
                 </View>
               </>
             ) : (
               <View style={styles.totalRow}>
-                <Text style={[styles.metaLabel, styles.totalRowText]}>IGST Total:</Text>
+                <Text style={[styles.metaLabel, styles.totalRowText]}>IGST ({igstRate}%):</Text>
                 <Text style={styles.totalRowText}>₹{Number(invoice.igstTotal).toFixed(2)}</Text>
               </View>
             )}
+            <View style={styles.totalRow}>
+              <Text style={[styles.metaLabel, styles.totalRowText]}>Total Tax Amount:</Text>
+              <Text style={styles.totalRowText}>₹{totalTaxVal.toFixed(2)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={[styles.metaLabel, styles.totalRowText]}>Round Off:</Text>
+              <Text style={styles.totalRowText}>₹{roundOffVal.toFixed(2)}</Text>
+            </View>
             <View style={styles.grandTotalRow}>
-              <Text style={styles.grandTotalRowText}>Grand Total:</Text>
+              <Text style={styles.grandTotalRowText}>Total Amount After Tax:</Text>
               <Text style={styles.grandTotalRowText}>₹{Number(invoice.grandTotal).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
             </View>
           </View>

@@ -136,8 +136,18 @@ export default function CreateInvoicePage() {
   const cgstTotal = lineItems.reduce((sum, item) => sum + item.cgst, 0);
   const sgstTotal = lineItems.reduce((sum, item) => sum + item.sgst, 0);
   const igstTotal = lineItems.reduce((sum, item) => sum + item.igst, 0);
-  const grandTotal = subTotal + cgstTotal + sgstTotal + igstTotal;
+  
+  // Round off and final totals
+  const rawGrandTotal = subTotal + cgstTotal + sgstTotal + igstTotal;
+  const grandTotal = Math.round(rawGrandTotal);
+  const roundOff = grandTotal - rawGrandTotal;
   const amountInWords = convertNumberToIndianWords(grandTotal);
+
+  const firstItemGst = lineItems[0]?.gstPercent || 18;
+  const cgstRate = firstItemGst / 2;
+  const sgstRate = firstItemGst / 2;
+  const igstRate = firstItemGst;
+  const totalTax = cgstTotal + sgstTotal + igstTotal;
 
   // Recalculate a single line item
   const updateLineCalculations = (item: LineItem, customerState: string, companyState: string): LineItem => {
@@ -555,8 +565,8 @@ export default function CreateInvoicePage() {
                     <h4 className="font-bold text-foreground text-sm uppercase tracking-wider border-b border-border/80 pb-2">Calculated Totals</h4>
                     <div className="text-xs space-y-2 text-muted-foreground">
                       <div className="flex justify-between">
-                        <span>Taxable Value:</span>
-                        <span className="text-foreground">₹{subTotal.toFixed(2)}</span>
+                        <span>Total Amount Before Tax:</span>
+                        <span className="text-foreground font-semibold">₹{subTotal.toFixed(2)}</span>
                       </div>
                       {discountTotal > 0 && (
                         <div className="flex justify-between text-red-500">
@@ -569,23 +579,33 @@ export default function CreateInvoicePage() {
                       {activeCustomer?.state.trim().toLowerCase() === companySettings?.state?.trim().toLowerCase() ? (
                         <>
                           <div className="flex justify-between">
-                            <span>CGST Total:</span>
+                            <span>CGST ({cgstRate}%):</span>
                             <span className="text-foreground">₹{cgstTotal.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>SGST Total:</span>
+                            <span>SGST ({sgstRate}%):</span>
                             <span className="text-foreground">₹{sgstTotal.toFixed(2)}</span>
                           </div>
                         </>
                       ) : (
                         <div className="flex justify-between">
-                          <span>IGST Total:</span>
+                          <span>IGST ({igstRate}%):</span>
                           <span className="text-foreground">₹{igstTotal.toFixed(2)}</span>
                         </div>
                       )}
 
-                      <div className="flex justify-between text-base font-bold text-foreground border-t border-border pt-2.5 mt-2">
-                        <span>Grand Total:</span>
+                      <div className="flex justify-between border-t border-border/40 pt-2">
+                        <span>Total Tax Amount:</span>
+                        <span className="text-foreground font-semibold">₹{totalTax.toFixed(2)}</span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span>Round Off:</span>
+                        <span className="text-foreground">₹{roundOff.toFixed(2)}</span>
+                      </div>
+
+                      <div className="flex justify-between text-base font-extrabold text-foreground border-t border-border pt-2.5 mt-2">
+                        <span>Total Amount After Tax:</span>
                         <span>₹{grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
