@@ -6,8 +6,8 @@ import { convertNumberToIndianWords } from "shared";
 Font.register({
   family: "Inter",
   fonts: [
-    { src: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjpg.ttf", fontWeight: "normal" },
-    { src: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGkyAZ9hjpg.ttf", fontWeight: "bold" },
+    { src: "/fonts/Inter-Regular.ttf", fontWeight: "normal" },
+    { src: "/fonts/Inter-Bold.ttf", fontWeight: "bold" },
   ],
 });
 
