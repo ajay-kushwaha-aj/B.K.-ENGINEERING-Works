@@ -26,6 +26,36 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 
+const EmployeeAvatar = ({ className, size = 24 }: { className?: string; size?: number }) => (
+  <svg 
+    viewBox="0 0 100 100" 
+    className={className} 
+    width={size} 
+    height={size} 
+    fill="currentColor"
+  >
+    {/* Shoulders / Vest */}
+    <path d="M10,100 C10,75 25,65 35,65 L65,65 C75,65 90,75 90,100 Z" fill="currentColor" opacity="0.9" />
+    
+    {/* High-Vis Vest Stripes */}
+    <path d="M25,100 L35,65 L45,100 Z" fill="#ffffff" opacity="0.2" />
+    <path d="M75,100 L65,65 L55,100 Z" fill="#ffffff" opacity="0.2" />
+
+    {/* Neck */}
+    <rect x="42" y="55" width="16" height="12" fill="currentColor" opacity="0.7" />
+
+    {/* Face/Head */}
+    <circle cx="50" cy="45" r="15" fill="currentColor" />
+
+    {/* Hard Hat Base */}
+    <path d="M25,40 C25,20 75,20 75,40 Z" fill="currentColor" />
+    {/* Hard Hat Brim */}
+    <path d="M20,40 C20,38 80,38 80,40 C80,42 20,42 20,40 Z" fill="currentColor" />
+    {/* Hard Hat Ridge */}
+    <rect x="46" y="22" width="8" height="15" rx="3" fill="#ffffff" opacity="0.3" />
+  </svg>
+);
+
 export default function WorkersPage() {
   const [workers, setWorkers] = React.useState<WorkerType[]>([]);
   const [search, setSearch] = React.useState("");
@@ -168,18 +198,18 @@ export default function WorkersPage() {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
               <HardHat className="text-royal-blue text-[#1E3A8A]" size={28} />
-              Workers
-              <span className="text-xs bg-[#1E3A8A]/10 text-[#1E3A8A] border border-[#1E3A8A]/20 dark:bg-blue-950/40 dark:text-blue-400 px-2 py-0.5 rounded-full font-mono font-medium">
+              Employees
+              <span className="text-xs bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full font-mono font-semibold">
                 {workers.length} total
               </span>
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Manage contractor profiles, designations, salary parameters, and banking information.
+              Manage employee profiles, designations, salary parameters, and banking information.
             </p>
           </div>
           <Button onClick={openAddModal} className="flex items-center gap-2 self-start sm:self-auto">
             <Plus size={18} />
-            Add Worker
+            Add Employee
           </Button>
         </div>
 
@@ -235,12 +265,12 @@ export default function WorkersPage() {
           </div>
         ) : workers.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-card/50">
-            <UserIcon className="mx-auto text-muted-foreground/50 mb-3" size={48} />
-            <h3 className="text-lg font-bold text-foreground">No workers found</h3>
+            <EmployeeAvatar size={48} className="mx-auto text-muted-foreground/50 mb-3" />
+            <h3 className="text-lg font-bold text-foreground">No employees found</h3>
             <p className="text-sm text-muted-foreground mt-1">
               {search || statusFilter || deptFilter 
                 ? "Try refining your search filters." 
-                : "Get started by adding your first worker profile."}
+                : "Get started by adding your first employee profile."}
             </p>
           </div>
         ) : (
@@ -250,7 +280,7 @@ export default function WorkersPage() {
               <table className="min-w-full divide-y divide-border">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">Worker</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">Employee</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">Designation</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">Department</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">Salary Rate</th>
@@ -270,13 +300,16 @@ export default function WorkersPage() {
                               className="w-10 h-10 rounded-full object-cover border border-border"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200">
-                              <UserIcon size={18} />
+                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 overflow-hidden">
+                              <EmployeeAvatar size={36} className="w-full h-full p-0.5" />
                             </div>
                           )}
                           <div>
                             <div className="font-semibold text-foreground">{worker.name}</div>
-                            <div className="text-xs text-muted-foreground mt-0.5">{worker.phone}</div>
+                            <a href={`tel:${worker.phone}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 mt-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20 transition-colors text-xs font-bold w-max cursor-pointer shadow-sm">
+                              <Phone size={12} />
+                              Call {worker.phone}
+                            </a>
                           </div>
                         </div>
                       </td>
@@ -290,13 +323,18 @@ export default function WorkersPage() {
                         ₹{Number(worker.basicSalary).toLocaleString("en-IN")} ({worker.salaryType})
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
                           worker.status === "ACTIVE"
-                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
                             : worker.status === "ON_LEAVE"
-                            ? "bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
-                            : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                            ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                            : "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20"
                         }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            worker.status === "ACTIVE" ? "bg-emerald-500" :
+                            worker.status === "ON_LEAVE" ? "bg-amber-500" :
+                            "bg-slate-500"
+                          }`}></span>
                           {worker.status}
                         </span>
                       </td>
@@ -337,8 +375,8 @@ export default function WorkersPage() {
                           className="w-12 h-12 rounded-full object-cover border border-border"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200">
-                          <UserIcon size={20} />
+                        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 overflow-hidden">
+                          <EmployeeAvatar size={44} className="w-full h-full p-0.5" />
                         </div>
                       )}
                       <div>
@@ -346,20 +384,28 @@ export default function WorkersPage() {
                         <p className="text-xs text-muted-foreground mt-0.5">{worker.designation} • {worker.department || "General"}</p>
                       </div>
                     </div>
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-2xs font-extrabold ${
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
                       worker.status === "ACTIVE"
-                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
                         : worker.status === "ON_LEAVE"
-                        ? "bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
-                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                        ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                        : "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20"
                     }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        worker.status === "ACTIVE" ? "bg-emerald-500" :
+                        worker.status === "ON_LEAVE" ? "bg-amber-500" :
+                        "bg-slate-500"
+                      }`}></span>
                       {worker.status}
                     </span>
                   </CardHeader>
                   <CardContent className="pt-2 pb-4 text-sm space-y-2">
                     <div className="flex justify-between border-b border-border/50 pb-2">
                       <span className="text-muted-foreground flex items-center gap-1.5"><Phone size={14} /> Contact</span>
-                      <span className="font-medium text-foreground">{worker.phone}</span>
+                      <a href={`tel:${worker.phone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20 transition-colors text-sm font-bold cursor-pointer shadow-sm">
+                        <Phone size={14} />
+                        Call {worker.phone}
+                      </a>
                     </div>
                     <div className="flex justify-between border-b border-border/50 pb-2">
                       <span className="text-muted-foreground flex items-center gap-1.5"><CreditCard size={14} /> Basic Pay</span>
@@ -395,7 +441,7 @@ export default function WorkersPage() {
 
               <div className="p-6 md:p-8 max-h-[85vh] overflow-y-auto">
                 <h2 className="text-2xl font-bold tracking-tight mb-2">
-                  {editingWorker ? "Edit Worker Profile" : "Register New Worker"}
+                  {editingWorker ? "Edit Employee Profile" : "Register New Employee"}
                 </h2>
                 <p className="text-sm text-muted-foreground mb-6">
                   Fill in all fields for KYC, bank details, and wage assignments.
@@ -416,7 +462,7 @@ export default function WorkersPage() {
                           <ImageIcon size={32} />
                         </div>
                       )}
-                      <span className="text-[10px] text-muted-foreground mt-2">Worker Photo</span>
+                      <span className="text-[10px] text-muted-foreground mt-2">Employee Photo</span>
                     </div>
                     
                     <div className="md:col-span-2 space-y-3">
@@ -613,7 +659,7 @@ export default function WorkersPage() {
                       Cancel
                     </Button>
                     <Button type="submit" isLoading={isSubmitting}>
-                      Save Worker
+                      Save Employee
                     </Button>
                   </div>
                 </form>

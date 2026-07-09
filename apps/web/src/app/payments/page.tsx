@@ -44,12 +44,56 @@ interface OutstandingInvoice {
   ageDays: number;
 }
 
+// SVG icon components for each payment mode
+const CashIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="20" height="12" rx="2" />
+    <circle cx="12" cy="12" r="3" />
+    <path d="M6 12h.01M18 12h.01" />
+  </svg>
+);
+
+const UpiIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M8 9l2.5 6L13 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M13 9h2.5a2 2 0 0 1 0 4H13v-4z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M16 15l1-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
+const BankIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 21h18" />
+    <path d="M3 10h18" />
+    <path d="M12 3l9 7H3l9-7z" />
+    <path d="M6 10v8M10 10v8M14 10v8M18 10v8" />
+  </svg>
+);
+
+const ChequeIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <path d="M6 15h8" />
+    <path d="M6 11h4" />
+    <path d="M16 9l-3 3 1.5 1.5L18 10" />
+  </svg>
+);
+
+const OnlineIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M2 12h20" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
 const PAYMENT_MODES = [
-  { value: "CASH", label: "Cash", emoji: "💵" },
-  { value: "UPI", label: "UPI", emoji: "📱" },
-  { value: "BANK_TRANSFER", label: "Bank Transfer", emoji: "🏦" },
-  { value: "CHEQUE", label: "Cheque", emoji: "📝" },
-  { value: "ONLINE", label: "Online", emoji: "💻" },
+  { value: "CASH", label: "Cash", icon: CashIcon },
+  { value: "UPI", label: "UPI", icon: UpiIcon },
+  { value: "BANK_TRANSFER", label: "Bank Transfer", icon: BankIcon },
+  { value: "CHEQUE", label: "Cheque", icon: ChequeIcon },
+  { value: "ONLINE", label: "Online", icon: OnlineIcon },
 ];
 
 function formatINR(val: number) {
@@ -235,18 +279,27 @@ export default function PaymentsPage() {
         </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div className="rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 p-4">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Total Outstanding</p>
-            <p className="text-lg font-extrabold text-red-600 dark:text-red-400">{formatINR(totalOutstanding)}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ef4444' }} />
+              <p className="text-xs uppercase tracking-wider font-bold text-foreground/60">Total Outstanding</p>
+            </div>
+            <p className="text-xl font-extrabold" style={{ color: '#ef4444' }}>{formatINR(totalOutstanding)}</p>
           </div>
-          <div className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/30 p-4">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Pending Invoices</p>
-            <p className="text-lg font-extrabold text-amber-600 dark:text-amber-400">{outstanding.length}</p>
+          <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#f59e0b' }} />
+              <p className="text-xs uppercase tracking-wider font-bold text-foreground/60">Pending Invoices</p>
+            </div>
+            <p className="text-xl font-extrabold" style={{ color: '#f59e0b' }}>{outstanding.length}</p>
           </div>
-          <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/30 p-4 col-span-2 md:col-span-1">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Payments Recorded</p>
-            <p className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">{recentPayments.length}</p>
+          <div className="rounded-xl bg-card border border-border p-5 shadow-sm col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
+              <p className="text-xs uppercase tracking-wider font-bold text-foreground/60">Payments Recorded</p>
+            </div>
+            <p className="text-xl font-extrabold" style={{ color: '#10b981' }}>{recentPayments.length}</p>
           </div>
         </div>
 
@@ -555,20 +608,23 @@ export default function PaymentsPage() {
                       Payment Mode
                     </label>
                     <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                      {PAYMENT_MODES.map((mode) => (
-                        <button
-                          key={mode.value}
-                          onClick={() => setModalMode(mode.value)}
-                          className={`flex flex-col items-center p-2.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
-                            modalMode === mode.value
-                              ? "border-secondary bg-secondary/10 text-secondary"
-                              : "border-border text-muted-foreground hover:border-border hover:bg-muted/50"
-                          }`}
-                        >
-                          <span className="text-base mb-0.5">{mode.emoji}</span>
-                          {mode.label}
-                        </button>
-                      ))}
+                      {PAYMENT_MODES.map((mode) => {
+                        const IconComp = mode.icon;
+                        return (
+                          <button
+                            key={mode.value}
+                            onClick={() => setModalMode(mode.value)}
+                            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-bold transition-all cursor-pointer ${
+                              modalMode === mode.value
+                                ? "border-secondary bg-secondary/10 text-secondary shadow-sm"
+                                : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            }`}
+                          >
+                            <IconComp className="w-5 h-5" />
+                            {mode.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

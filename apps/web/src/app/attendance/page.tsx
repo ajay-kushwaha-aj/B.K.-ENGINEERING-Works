@@ -30,18 +30,53 @@ export default function DailyAttendancePage() {
   const [date, setDate] = React.useState<string>(new Date().toISOString().split("T")[0]);
   const [sheet, setSheet] = React.useState<Record<string, AttendanceRecord>>({});
   const [workers, setWorkers] = React.useState<any[]>([]);
+  const [sites, setSites] = React.useState<any[]>([]);
+  const [selectedSiteId, setSelectedSiteId] = React.useState<string>("");
   
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveMessage, setSaveMessage] = React.useState<string | null>(null);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
+  // Fetch sites list on mount
+  React.useEffect(() => {
+    const fetchSites = async () => {
+      try {
+        const sessionStr = localStorage.getItem("bk_session");
+        const token = sessionStr ? JSON.parse(sessionStr).token : "";
+        const res = await fetch("/api/sites", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSites(data);
+          if (data.length > 0) {
+            setSelectedSiteId(data[0].id);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load sites", e);
+      }
+    };
+    fetchSites();
+  }, []);
+
   // Fetch attendance sheet for the selected date
   const fetchAttendanceSheet = React.useCallback(async () => {
+    if (!selectedSiteId) return;
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch(`/api/attendance?date=${date}`);
+      const sessionStr = localStorage.getItem("bk_session");
+      const token = sessionStr ? JSON.parse(sessionStr).token : "";
+
+      const res = await fetch(`/api/attendance?date=${date}&siteId=${selectedSiteId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load attendance");
 
@@ -65,7 +100,7 @@ export default function DailyAttendancePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [date]);
+  }, [date, selectedSiteId]);
 
   React.useEffect(() => {
     fetchAttendanceSheet();
@@ -116,17 +151,25 @@ export default function DailyAttendancePage() {
   };
 
   const handleSaveAttendance = async () => {
+    if (!selectedSiteId) return;
     setIsSaving(true);
     setSaveMessage(null);
     setErrorMsg(null);
     try {
+      const sessionStr = localStorage.getItem("bk_session");
+      const token = sessionStr ? JSON.parse(sessionStr).token : "";
+
       const logs = Object.values(sheet);
       const res = await fetch("/api/attendance", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           date,
           logs,
+          siteId: selectedSiteId
         }),
       });
 
@@ -150,6 +193,9 @@ export default function DailyAttendancePage() {
     current.setDate(current.getDate() + days);
     setDate(current.toISOString().split("T")[0]);
   };
+
+  const presentCount = Object.values(sheet).filter(r => r.status === "PRESENT").length;
+  const halfDayCount = Object.values(sheet).filter(r => r.status === "HALF_DAY").length;
 
   return (
     <Navigation>
@@ -198,7 +244,7 @@ export default function DailyAttendancePage() {
 
         {/* Global Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/20 border border-border/60 p-4 rounded-xl">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <Button 
               variant="outline" 
               size="sm"
@@ -208,6 +254,33 @@ export default function DailyAttendancePage() {
             >
               Mark All Present Today
             </Button>
+
+            {!isLoading && workers.length > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-lg border border-emerald-200 dark:border-emerald-500/30 text-xs font-bold shadow-sm">
+                  <CheckCircle2 size={14} />
+                  {presentCount} / {workers.length} Present
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-lg border border-amber-200 dark:border-amber-500/30 text-xs font-bold shadow-sm">
+                  <Clock size={14} />
+                  {halfDayCount} Half Day
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-semibold">Site Location:</span>
+              <select
+                value={selectedSiteId}
+                onChange={(e) => setSelectedSiteId(e.target.value)}
+                className="h-9 text-xs rounded-lg border border-border bg-background px-3 focus:outline-none focus:ring-2 focus:ring-secondary/50 font-bold cursor-pointer"
+              >
+                {sites.length === 0 && <option value="">No sites available</option>}
+                {sites.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <Button

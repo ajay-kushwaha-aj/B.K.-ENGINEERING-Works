@@ -213,10 +213,11 @@ export default function ProductsPage() {
                         {Number(product.stockQty)} {product.unit}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${product.status === "ACTIVE"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
-                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                          }`}>
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold border ${
+                          product.status === "ACTIVE"
+                            ? "bg-[#e6f4ea] text-[#137333] border-[#ceead6] dark:bg-[#137333]/20 dark:text-[#34d399] dark:border-[#10b981]/30"
+                            : "bg-[#f1f3f4] text-[#3c4043] border-[#dadce0] dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+                        }`}>
                           {product.status}
                         </span>
                       </td>
@@ -246,10 +247,11 @@ export default function ProductsPage() {
                         <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
                       )}
                     </div>
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-2xs font-extrabold ${product.status === "ACTIVE"
-                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
-                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                      }`}>
+                    <span className={`inline-flex px-2.5 py-1 rounded-full text-2xs font-extrabold border ${
+                      product.status === "ACTIVE"
+                        ? "bg-[#e6f4ea] text-[#137333] border-[#ceead6] dark:bg-[#137333]/20 dark:text-[#34d399] dark:border-[#10b981]/30"
+                        : "bg-[#f1f3f4] text-[#3c4043] border-[#dadce0] dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+                    }`}>
                       {product.status}
                     </span>
                   </CardHeader>

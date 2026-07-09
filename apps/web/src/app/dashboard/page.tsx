@@ -253,7 +253,7 @@ function AdminDashboard({ user }: { user: any }) {
           iconBg: "bg-indigo-500 dark:bg-indigo-600",
         },
         {
-          label: "Workers on Leave",
+          label: "Employees on Leave",
           value: String(data.workersOnLeaveToday || 0),
           icon: Users,
           color: "text-white",
@@ -313,18 +313,18 @@ function AdminDashboard({ user }: { user: any }) {
           {/* KPI Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {kpiCards.map((card, idx) => (
-              <Card key={idx} className="relative overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 group bg-card">
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Card key={idx} className="relative overflow-hidden border border-border/60 shadow-md hover:shadow-lg transition-all duration-300 group bg-card">
+                <CardContent className="p-5 sm:p-6 flex flex-row items-start justify-between gap-3 sm:gap-4">
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 break-words">
                       {card.label}
                     </p>
-                    <p className="text-2xl font-black text-foreground tracking-tight">
+                    <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight break-words" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {card.value}
-                    </p>
+                    </div>
                   </div>
-                  <div className={`p-4 rounded-2xl ${card.iconBg} ${card.color} shadow-sm group-hover:scale-110 transition-transform duration-300`}>
-                    <card.icon size={22} />
+                  <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${card.iconBg} ${card.color} shadow-sm group-hover:scale-105 transition-transform duration-300 flex-shrink-0`}>
+                    <card.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                 </CardContent>
               </Card>

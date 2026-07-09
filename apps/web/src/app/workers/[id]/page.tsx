@@ -25,6 +25,36 @@ import {
 } from "lucide-react";
 import { WorkerType, AttendanceType } from "shared";
 
+const EmployeeAvatar = ({ className, size = 24 }: { className?: string; size?: number }) => (
+  <svg 
+    viewBox="0 0 100 100" 
+    className={className} 
+    width={size} 
+    height={size} 
+    fill="currentColor"
+  >
+    {/* Shoulders / Vest */}
+    <path d="M10,100 C10,75 25,65 35,65 L65,65 C75,65 90,75 90,100 Z" fill="currentColor" opacity="0.9" />
+    
+    {/* High-Vis Vest Stripes */}
+    <path d="M25,100 L35,65 L45,100 Z" fill="#ffffff" opacity="0.2" />
+    <path d="M75,100 L65,65 L55,100 Z" fill="#ffffff" opacity="0.2" />
+
+    {/* Neck */}
+    <rect x="42" y="55" width="16" height="12" fill="currentColor" opacity="0.7" />
+
+    {/* Face/Head */}
+    <circle cx="50" cy="45" r="15" fill="currentColor" />
+
+    {/* Hard Hat Base */}
+    <path d="M25,40 C25,20 75,20 75,40 Z" fill="currentColor" />
+    {/* Hard Hat Brim */}
+    <path d="M20,40 C20,38 80,38 80,40 C80,42 20,42 20,40 Z" fill="currentColor" />
+    {/* Hard Hat Ridge */}
+    <rect x="46" y="22" width="8" height="15" rx="3" fill="#ffffff" opacity="0.3" />
+  </svg>
+);
+
 export default function WorkerDetailPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
@@ -180,9 +210,9 @@ export default function WorkerDetailPage() {
         <div className="max-w-xl mx-auto text-center py-20">
           <AlertCircle className="mx-auto text-danger mb-4" size={48} />
           <h2 className="text-xl font-bold text-foreground">Error Loading Profile</h2>
-          <p className="text-muted-foreground mt-2">{errorMsg || "Worker details not found."}</p>
+          <p className="text-muted-foreground mt-2">{errorMsg || "Employee details not found."}</p>
           <Link href="/workers" className="inline-block mt-6">
-            <Button className="flex items-center gap-2"><ArrowLeft size={16} /> Back to Workers</Button>
+            <Button className="flex items-center gap-2"><ArrowLeft size={16} /> Back to Employees</Button>
           </Link>
         </div>
       </Navigation>
@@ -200,7 +230,7 @@ export default function WorkerDetailPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              Worker Profile: {worker.name}
+              Employee Profile: {worker.name}
             </h1>
             <p className="text-sm text-muted-foreground">
               Joined {new Date(worker.joiningDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
@@ -221,20 +251,20 @@ export default function WorkerDetailPage() {
                   className="w-16 h-16 rounded-full object-cover border-2 border-[#1E3A8A]"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200">
-                  <UserIcon size={28} />
+                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 overflow-hidden">
+                  <EmployeeAvatar size={56} className="w-full h-full p-0.5" />
                 </div>
               )}
               <div>
                 <h2 className="text-xl font-bold text-foreground">{worker.name}</h2>
                 <p className="text-sm text-muted-foreground font-medium">{worker.designation} • {worker.department || "General"}</p>
                 <div className="mt-1">
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-2xs font-extrabold ${
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-2xs font-extrabold border ${
                     worker.status === "ACTIVE"
-                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
+                      ? "bg-[#e6f4ea] text-[#137333] border-[#ceead6] dark:bg-[#137333]/20 dark:text-[#34d399] dark:border-[#10b981]/30"
                       : worker.status === "ON_LEAVE"
-                      ? "bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
-                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                      ? "bg-[#fef7e0] text-[#b06000] border-[#feebc8] dark:bg-[#b06000]/20 dark:text-[#fbbf24] dark:border-[#f59e0b]/30"
+                      : "bg-[#f1f3f4] text-[#3c4043] border-[#dadce0] dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
                   }`}>
                     {worker.status}
                   </span>
@@ -245,7 +275,9 @@ export default function WorkerDetailPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2.5 text-muted-foreground">
                   <Phone size={16} className="text-secondary" />
-                  <span className="text-foreground font-semibold">{worker.phone}</span>
+                  <a href={`tel:${worker.phone}`} className="text-foreground font-semibold hover:text-secondary hover:underline transition-colors flex items-center gap-1 cursor-pointer">
+                    {worker.phone}
+                  </a>
                 </div>
                 {worker.email && (
                   <div className="flex items-center gap-2.5 text-muted-foreground">
