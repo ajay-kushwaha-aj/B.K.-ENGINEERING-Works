@@ -65,14 +65,17 @@ export default function DailyAttendancePage() {
 
   // Fetch attendance sheet for the selected date
   const fetchAttendanceSheet = React.useCallback(async () => {
-    if (!selectedSiteId) return;
     setIsLoading(true);
     setErrorMsg(null);
     try {
       const sessionStr = localStorage.getItem("bk_session");
       const token = sessionStr ? JSON.parse(sessionStr).token : "";
 
-      const res = await fetch(`/api/attendance?date=${date}&siteId=${selectedSiteId}`, {
+      const url = selectedSiteId
+        ? `/api/attendance?date=${date}&siteId=${selectedSiteId}`
+        : `/api/attendance?date=${date}`;
+
+      const res = await fetch(url, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -275,7 +278,7 @@ export default function DailyAttendancePage() {
                 onChange={(e) => setSelectedSiteId(e.target.value)}
                 className="h-9 text-xs rounded-lg border border-border bg-background px-3 focus:outline-none focus:ring-2 focus:ring-secondary/50 font-bold cursor-pointer"
               >
-                {sites.length === 0 && <option value="">No sites available</option>}
+                <option value="">General / All Sites</option>
                 {sites.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}

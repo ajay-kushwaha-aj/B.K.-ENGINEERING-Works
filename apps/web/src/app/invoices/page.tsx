@@ -38,9 +38,13 @@ export default function InvoicesPage() {
         ? "modern"
         : "classic";
 
+      const res = await fetch(`/api/invoices/${inv.id}`);
+      if (!res.ok) throw new Error("Failed to fetch full invoice details");
+      const fullInvoice = await res.json();
+
       const { pdf } = await import("@react-pdf/renderer");
       const { InvoicePdfDocument } = await import("@/components/invoice-pdf");
-      const doc = <InvoicePdfDocument invoice={inv} companySettings={companySettings} theme={themeChoice} />;
+      const doc = <InvoicePdfDocument invoice={fullInvoice} companySettings={companySettings} theme={themeChoice} />;
       const blob = await pdf(doc).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -61,9 +65,13 @@ export default function InvoicesPage() {
         ? "modern"
         : "classic";
 
+      const res = await fetch(`/api/invoices/${inv.id}`);
+      if (!res.ok) throw new Error("Failed to fetch full invoice details");
+      const fullInvoice = await res.json();
+
       const { pdf } = await import("@react-pdf/renderer");
       const { InvoicePdfDocument } = await import("@/components/invoice-pdf");
-      const doc = <InvoicePdfDocument invoice={inv} companySettings={companySettings} theme={themeChoice} />;
+      const doc = <InvoicePdfDocument invoice={fullInvoice} companySettings={companySettings} theme={themeChoice} />;
       const blob = await pdf(doc).toBlob();
       const url = URL.createObjectURL(blob);
 

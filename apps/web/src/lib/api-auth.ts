@@ -16,28 +16,46 @@ export interface AuthenticatedUser {
 export async function getCurrentUser(request: Request): Promise<AuthenticatedUser | null> {
   try {
     const authHeader = request.headers.get("Authorization");
+    console.log("[DEBUG api-auth] Incoming Authorization header:", authHeader ? `${authHeader.substring(0, 15)}...` : "None");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("[DEBUG api-auth] Invalid or missing Bearer token");
       return null;
     }
 
     const token = authHeader.substring(7).trim();
-    if (!token) return null;
-
-    // Real Supabase Auth Flow
-    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token);
-    if (error || !supabaseUser || !supabaseUser.email) {
+    if (!token) {
+      console.log("[DEBUG api-auth] Token string is empty");
       return null;
     }
+
+    // Real Supabase Auth Flow
+    console.log("[DEBUG api-auth] Verifying token with Supabase auth...");
+    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token);
+    if (error) {
+      console.error("[DEBUG api-auth] Supabase auth.getUser error:", error);
+      return null;
+    }
+    if (!supabaseUser || !supabaseUser.email) {
+      console.log("[DEBUG api-auth] Supabase returned no user or email");
+      return null;
+    }
+    console.log("[DEBUG api-auth] Supabase user verified:", supabaseUser.email);
 
     // Load DB Profile
     const userProfile = await prisma.user.findUnique({
       where: { email: supabaseUser.email },
     });
 
-    if (!userProfile || userProfile.status === "INACTIVE") {
+    if (!userProfile) {
+      console.log("[DEBUG api-auth] User profile not found in Prisma DB for email:", supabaseUser.email);
+      return null;
+    }
+    if (userProfile.status === "INACTIVE") {
+      console.log("[DEBUG api-auth] User account status is INACTIVE for:", supabaseUser.email);
       return null;
     }
 
+    console.log("[DEBUG api-auth] Authenticated user loaded:", userProfile.email, "Role:", userProfile.role);
     return {
       id: userProfile.id,
       email: userProfile.email,

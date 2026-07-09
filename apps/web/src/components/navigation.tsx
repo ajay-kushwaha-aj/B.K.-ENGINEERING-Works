@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 
 
+import { supabase } from "@/lib/supabase";
+
 interface NavigationProps {
   children: React.ReactNode;
 }
@@ -70,6 +72,34 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
         router.push("/login");
       }
     }
+  }, [pathname, router]);
+
+  React.useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        const sessionStr = localStorage.getItem("bk_session");
+        if (sessionStr) {
+          try {
+            const parsed = JSON.parse(sessionStr);
+            if (parsed.token !== session.access_token) {
+              parsed.token = session.access_token;
+              localStorage.setItem("bk_session", JSON.stringify(parsed));
+            }
+          } catch (e) {
+            console.error("Failed to update session token:", e);
+          }
+        }
+      } else if (event === "SIGNED_OUT") {
+        localStorage.removeItem("bk_session");
+        if (pathname !== "/login") {
+          router.push("/login");
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [pathname, router]);
 
   const handleLogout = () => {

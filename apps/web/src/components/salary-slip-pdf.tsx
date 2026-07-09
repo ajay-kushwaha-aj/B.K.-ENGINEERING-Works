@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
+    width: "62%",
   },
   logo: {
     width: 46,
@@ -41,22 +42,22 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   companyName: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "bold",
     color: "#0f172a",
     letterSpacing: -0.3,
   },
   companySub: {
-    fontSize: 6.5,
+    fontSize: 5.6,
     color: "#475569",
-    letterSpacing: 1.8,
-    marginTop: 3,
+    letterSpacing: 0.5,
+    marginTop: 7,
     textTransform: "uppercase",
     fontWeight: "bold",
   },
   companyDetails: {
     alignItems: "flex-end",
-    maxWidth: 240,
+    width: "36%",
   },
   companyDetailText: {
     fontSize: 7.5,
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1e3a8a",
     letterSpacing: 2,
-    marginBottom: 4,
+    marginBottom: 9,
     textTransform: "uppercase",
   },
   infoSection: {
@@ -242,39 +243,39 @@ const modernStyles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "#0f172a", // Dark charcoal primary header block
+    backgroundColor: "#f8fafc", // Clean, light off-white printable background
     borderLeftWidth: 4,
-    borderLeftColor: "#3b82f6", // Premium electric blue accent
+    borderLeftColor: "#1e3a8a", // Clean dark blue border accent
     paddingHorizontal: 18,
     paddingVertical: 16,
     borderRadius: 6,
     marginBottom: 20,
   },
   companyName: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: "#0f172a", // Dark slate for readability
     letterSpacing: -0.3,
   },
   companySub: {
-    fontSize: 6.5,
-    color: "#38bdf8", // Premium cyan tagline color for readability on dark backgrounds
-    letterSpacing: 1.8,
-    marginTop: 3,
+    fontSize: 5.6,
+    color: "#1e3a8a", // Dark blue tagline
+    letterSpacing: 0.5,
+    marginTop: 7,
     textTransform: "uppercase",
     fontWeight: "bold",
   },
   companyDetailText: {
     fontSize: 7.5,
-    color: "#cbd5e1",
+    color: "#475569", // Dark gray detail text
     lineHeight: 1.35,
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: "#1e3a8a", // Clean dark blue title
     letterSpacing: 2,
-    marginBottom: 4,
+    marginBottom: 9,
     textTransform: "uppercase",
   },
 });
@@ -346,7 +347,7 @@ export const SalarySlipPdfDocument: React.FC<SalarySlipPdfProps> = ({ slip, comp
         
         {/* Header Section */}
         <View style={s.header}>
-          <View style={s.logoContainer}>
+          <View style={[s.logoContainer, { width: "53%" }]}>
             {company.logoUrl ? (
               <Image src={company.logoUrl} style={s.logo} />
             ) : (
@@ -357,18 +358,18 @@ export const SalarySlipPdfDocument: React.FC<SalarySlipPdfProps> = ({ slip, comp
               <Text style={s.companySub}>Industrial Erection & Pipeline Fabrication</Text>
             </View>
           </View>
-          <View style={s.companyDetails}>
+          <View style={[s.companyDetails, { width: "45%", alignItems: "flex-end" }]}>
             <Text style={s.title}>Salary Slip</Text>
-            <Text style={s.companyDetailText}>{company.address}</Text>
+            <Text style={[s.companyDetailText, { fontSize: 4.8, textAlign: "right" }]}>{company.address}</Text>
             <View style={{ flexDirection: "row", marginTop: 2 }}>
-              {company.phone && <Text style={s.companyDetailText}>Ph: {company.phone}</Text>}
-              {company.phone && company.email && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: isModern ? "#475569" : "#cbd5e1" }]}>|</Text>}
-              {company.email && <Text style={s.companyDetailText}>Email: {company.email}</Text>}
+              {company.phone && <Text style={[s.companyDetailText, { fontSize: 5.0 }]}>Ph: {company.phone}</Text>}
+              {company.phone && company.email && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: "#cbd5e1", fontSize: 5.0 }]}>|</Text>}
+              {company.email && <Text style={[s.companyDetailText, { fontSize: 5.0 }]}>Email: {company.email}</Text>}
             </View>
-            <View style={{ flexDirection: "row", marginTop: 4, backgroundColor: isModern ? "#1e293b" : "#f8fafc", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 0.5, borderColor: isModern ? "#334155" : "#e2e8f0", alignItems: "center" }}>
-              <Text style={[s.companyDetailText, { fontWeight: "bold", color: isModern ? "#ffffff" : "#0f172a" }]}>GSTIN: {company.gstin || "URD"}</Text>
-              {company.pan && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: isModern ? "#475569" : "#cbd5e1" }]}>|</Text>}
-              {company.pan && <Text style={[s.companyDetailText, { fontWeight: "bold", color: isModern ? "#ffffff" : "#0f172a" }]}>PAN: {company.pan}</Text>}
+            <View style={{ flexDirection: "row", marginTop: 4, backgroundColor: "#f8fafc", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 0.5, borderColor: "#e2e8f0", alignItems: "center" }}>
+              <Text style={[s.companyDetailText, { fontWeight: "bold", color: "#0f172a", fontSize: 5.5 }]}>GSTIN: {company.gstin || "URD"}</Text>
+              {company.pan && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: "#cbd5e1", fontSize: 5.5 }]}>|</Text>}
+              {company.pan && <Text style={[s.companyDetailText, { fontWeight: "bold", color: "#0f172a", fontSize: 5.5 }]}>PAN: {company.pan}</Text>}
             </View>
           </View>
         </View>
@@ -378,8 +379,7 @@ export const SalarySlipPdfDocument: React.FC<SalarySlipPdfProps> = ({ slip, comp
           <View style={styles.metaLeft}>
             <Text style={styles.sectionTitle}>Employee Information</Text>
             <Text style={[styles.boldText, { fontSize: 10 }]}>{worker.name}</Text>
-            <Text style={{ marginTop: 2 }}>ID: {worker.id}</Text>
-            <Text>Designation: {worker.designation}</Text>
+            <Text style={{ marginTop: 2 }}>Designation: {worker.designation}</Text>
             <Text>Department: {worker.department || "General"}</Text>
             <Text>Wage Period: {monthName} {slip.year}</Text>
           </View>

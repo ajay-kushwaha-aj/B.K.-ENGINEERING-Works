@@ -18,6 +18,7 @@ const supabaseAdmin = supabaseUrl && supabaseServiceKey
 export async function GET(request: Request) {
   try {
     const requester = await getCurrentUser(request);
+    console.log("[DEBUG /api/users GET] requester loaded:", requester);
     if (!requester || requester.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
@@ -45,6 +46,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const requester = await getCurrentUser(request);
+    console.log("[DEBUG /api/users POST] requester loaded:", requester);
     if (!requester || requester.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }

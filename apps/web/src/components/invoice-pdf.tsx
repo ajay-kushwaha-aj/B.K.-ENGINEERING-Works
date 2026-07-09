@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
+    width: "62%",
   },
   logo: {
     width: 46,
@@ -41,22 +42,22 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   companyName: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "bold",
     color: "#0f172a",
     letterSpacing: -0.3,
   },
   companySub: {
-    fontSize: 6.5,
+    fontSize: 5.6,
     color: "#475569",
-    letterSpacing: 1.8,
-    marginTop: 3,
+    letterSpacing: 0.5,
+    marginTop: 7,
     textTransform: "uppercase",
     fontWeight: "bold",
   },
   companyDetails: {
     alignItems: "flex-end",
-    maxWidth: 240,
+    width: "36%",
   },
   companyDetailText: {
     fontSize: 7.5,
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1e3a8a",
     letterSpacing: 2,
-    marginBottom: 4,
+    marginBottom: 9,
     textTransform: "uppercase",
   },
   infoSection: {
@@ -145,8 +146,9 @@ const styles = StyleSheet.create({
   colHsn: { width: "10%", textAlign: "center" },
   colQty: { width: "8%", textAlign: "center" },
   colRate: { width: "12%", textAlign: "right" },
-  colGst: { width: "8%", textAlign: "center" },
-  colGstAmt: { width: "10%", textAlign: "right" },
+  colCgst: { width: "9%", textAlign: "center" },
+  colSgst: { width: "9%", textAlign: "center" },
+  colIgst: { width: "18%", textAlign: "center" },
   colAmt: { width: "12%", textAlign: "right" },
   
   // Summary Block
@@ -252,39 +254,39 @@ const modernStyles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "#0f172a", // Dark charcoal primary header block
+    backgroundColor: "#f8fafc", // Clean, light off-white printable background
     borderLeftWidth: 4,
-    borderLeftColor: "#3b82f6", // Premium electric blue accent
+    borderLeftColor: "#1e3a8a", // Clean dark blue accent border
     paddingHorizontal: 18,
     paddingVertical: 16,
     borderRadius: 6,
     marginBottom: 15,
   },
   companyName: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: "#0f172a", // Dark slate for readability
     letterSpacing: -0.3,
   },
   companySub: {
-    fontSize: 6.5,
-    color: "#38bdf8", // Premium cyan tagline color for readability on dark backgrounds
-    letterSpacing: 1.8,
-    marginTop: 3,
+    fontSize: 5.6,
+    color: "#1e3a8a", // Dark blue tagline
+    letterSpacing: 0.5,
+    marginTop: 7,
     textTransform: "uppercase",
     fontWeight: "bold",
   },
   companyDetailText: {
     fontSize: 7.5,
-    color: "#cbd5e1",
+    color: "#475569", // Dark gray detail text
     lineHeight: 1.35,
   },
   invoiceTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: "#1e3a8a", // Clean dark blue title
     letterSpacing: 2,
-    marginBottom: 4,
+    marginBottom: 9,
     textTransform: "uppercase",
   },
 });
@@ -295,7 +297,29 @@ interface InvoicePdfProps {
   theme?: "classic" | "modern";
 }
 
-export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, companySettings, theme = "classic" }) => {
+export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice: rawInvoice, companySettings, theme = "classic" }) => {
+  const invoice = React.useMemo(() => {
+    return {
+      ...rawInvoice,
+      invoiceNumber: rawInvoice?.invoiceNumber || "DRAFT",
+      invoiceDate: rawInvoice?.invoiceDate || new Date(),
+      dueDate: rawInvoice?.dueDate || null,
+      subTotal: Number(rawInvoice?.subTotal || 0),
+      discountTotal: Number(rawInvoice?.discountTotal || 0),
+      cgstTotal: Number(rawInvoice?.cgstTotal || 0),
+      sgstTotal: Number(rawInvoice?.sgstTotal || 0),
+      igstTotal: Number(rawInvoice?.igstTotal || 0),
+      grandTotal: Number(rawInvoice?.grandTotal || 0),
+      amountInWords: rawInvoice?.amountInWords || "",
+      notes: rawInvoice?.notes || "",
+      terms: rawInvoice?.terms || "",
+      status: rawInvoice?.status || "DRAFT",
+      paymentStatus: rawInvoice?.paymentStatus || "UNPAID",
+      items: rawInvoice?.items || [],
+      customer: rawInvoice?.customer || null,
+    };
+  }, [rawInvoice]);
+
   const isModern = theme === "modern";
   const s = {
     ...styles,
@@ -354,9 +378,8 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
     <Document>
       <Page size="A4" style={styles.page}>
         
-        {/* Header Block */}
         <View style={s.header}>
-          <View style={s.logoContainer}>
+          <View style={[s.logoContainer, { width: "53%" }]}>
             {company.logoUrl ? (
               <Image src={company.logoUrl} style={s.logo} />
             ) : (
@@ -368,18 +391,18 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
               <Text style={s.companySub}>Industrial Erection & Pipeline Fabrication</Text>
             </View>
           </View>
-          <View style={s.companyDetails}>
+          <View style={[s.companyDetails, { width: "45%", alignItems: "flex-end" }]}>
             <Text style={s.invoiceTitle}>GST Tax Invoice</Text>
-            <Text style={s.companyDetailText}>{company.address}</Text>
+            <Text style={[s.companyDetailText, { fontSize: 4.8, textAlign: "right" }]}>{company.address}</Text>
             <View style={{ flexDirection: "row", marginTop: 2 }}>
-              {company.phone && <Text style={s.companyDetailText}>Ph: {company.phone}</Text>}
-              {company.phone && company.email && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: isModern ? "#475569" : "#cbd5e1" }]}>|</Text>}
-              {company.email && <Text style={s.companyDetailText}>Email: {company.email}</Text>}
+              {company.phone && <Text style={[s.companyDetailText, { fontSize: 5.0 }]}>Ph: {company.phone}</Text>}
+              {company.phone && company.email && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: "#cbd5e1", fontSize: 5.0 }]}>|</Text>}
+              {company.email && <Text style={[s.companyDetailText, { fontSize: 5.0 }]}>Email: {company.email}</Text>}
             </View>
-            <View style={{ flexDirection: "row", marginTop: 4, backgroundColor: isModern ? "#1e293b" : "#f8fafc", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 0.5, borderColor: isModern ? "#334155" : "#e2e8f0", alignItems: "center" }}>
-              <Text style={[s.companyDetailText, { fontWeight: "bold", color: isModern ? "#ffffff" : "#0f172a" }]}>GSTIN: {company.gstin || "URD"}</Text>
-              {company.pan && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: isModern ? "#475569" : "#cbd5e1" }]}>|</Text>}
-              {company.pan && <Text style={[s.companyDetailText, { fontWeight: "bold", color: isModern ? "#ffffff" : "#0f172a" }]}>PAN: {company.pan}</Text>}
+            <View style={{ flexDirection: "row", marginTop: 4, backgroundColor: "#f8fafc", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 0.5, borderColor: "#e2e8f0", alignItems: "center" }}>
+              <Text style={[s.companyDetailText, { fontWeight: "bold", color: "#0f172a", fontSize: 5.5 }]}>GSTIN: {company.gstin || "URD"}</Text>
+              {company.pan && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: "#cbd5e1", fontSize: 5.5 }]}>|</Text>}
+              {company.pan && <Text style={[s.companyDetailText, { fontWeight: "bold", color: "#0f172a", fontSize: 5.5 }]}>PAN: {company.pan}</Text>}
             </View>
           </View>
         </View>
@@ -433,15 +456,18 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
             <Text style={styles.colHsn}>HSN/SAC</Text>
             <Text style={styles.colQty}>Qty</Text>
             <Text style={styles.colRate}>Rate</Text>
-            <Text style={styles.colGst}>GST %</Text>
-            <Text style={styles.colGstAmt}>{isIntrastate ? "CGST+SGST" : "IGST"}</Text>
+            {isIntrastate ? (
+              <View style={{ flexDirection: "row", width: "18%" }}>
+                <Text style={[styles.colCgst, { width: "50%" }]}>CGST</Text>
+                <Text style={[styles.colSgst, { width: "50%" }]}>SGST</Text>
+              </View>
+            ) : (
+              <Text style={styles.colIgst}>IGST</Text>
+            )}
             <Text style={styles.colAmt}>Total (₹)</Text>
           </View>
 
           {invoice.items.map((item: any, idx: number) => {
-            const gstAmount = Number(item.cgst) + Number(item.sgst) + Number(item.igst);
-            const rawAmount = Number(item.rate) * Number(item.qty) - Number(item.discount);
-            
             return (
               <View key={item.id || idx} style={styles.tableRow}>
                 <Text style={styles.colSl}>{idx + 1}</Text>
@@ -449,8 +475,23 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
                 <Text style={styles.colHsn}>{item.product?.hsnCode || item.hsnCode || "—"}</Text>
                 <Text style={styles.colQty}>{Number(item.qty)} {item.unit}</Text>
                 <Text style={styles.colRate}>₹{Number(item.rate).toFixed(2)}</Text>
-                <Text style={styles.colGst}>{Number(item.gstPercent)}%</Text>
-                <Text style={styles.colGstAmt}>₹{gstAmount.toFixed(2)}</Text>
+                {isIntrastate ? (
+                  <View style={{ flexDirection: "row", width: "18%" }}>
+                    <View style={[styles.colCgst, { width: "50%", flexDirection: "column", alignItems: "center" }]}>
+                      <Text style={{ fontSize: 7, color: "#64748b" }}>{(Number(item.gstPercent) / 2)}%</Text>
+                      <Text style={{ fontSize: 8, fontWeight: "bold" }}>₹{Number(item.cgst).toFixed(2)}</Text>
+                    </View>
+                    <View style={[styles.colSgst, { width: "50%", flexDirection: "column", alignItems: "center" }]}>
+                      <Text style={{ fontSize: 7, color: "#64748b" }}>{(Number(item.gstPercent) / 2)}%</Text>
+                      <Text style={{ fontSize: 8, fontWeight: "bold" }}>₹{Number(item.sgst).toFixed(2)}</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={[styles.colIgst, { flexDirection: "column", alignItems: "center" }]}>
+                    <Text style={{ fontSize: 7, color: "#64748b" }}>{Number(item.gstPercent)}%</Text>
+                    <Text style={{ fontSize: 8, fontWeight: "bold" }}>₹{Number(item.igst).toFixed(2)}</Text>
+                  </View>
+                )}
                 <Text style={styles.colAmt}>₹{Number(item.amount).toFixed(2)}</Text>
               </View>
             );
@@ -475,7 +516,7 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
               </View>
             )}
             {isIntrastate ? (
-              <>
+              <View>
                 <View style={styles.totalRow}>
                   <Text style={[styles.metaLabel, styles.totalRowText]}>CGST ({cgstRate}%):</Text>
                   <Text style={styles.totalRowText}>₹{Number(invoice.cgstTotal).toFixed(2)}</Text>
@@ -484,7 +525,7 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
                   <Text style={[styles.metaLabel, styles.totalRowText]}>SGST ({sgstRate}%):</Text>
                   <Text style={styles.totalRowText}>₹{Number(invoice.sgstTotal).toFixed(2)}</Text>
                 </View>
-              </>
+              </View>
             ) : (
               <View style={styles.totalRow}>
                 <Text style={[styles.metaLabel, styles.totalRowText]}>IGST ({igstRate}%):</Text>

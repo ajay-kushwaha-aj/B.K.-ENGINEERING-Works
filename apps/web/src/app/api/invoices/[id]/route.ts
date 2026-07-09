@@ -13,7 +13,11 @@ export async function GET(
     const invoice = await prisma.invoice.findUnique({
       where: { id },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
         customer: true,
       },
     });
