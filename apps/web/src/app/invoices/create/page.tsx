@@ -160,8 +160,6 @@ export default function CreateInvoicePage() {
 
   // Trigger recalculation on line item change
   const handleItemChange = (idx: number, updatedItem: Partial<LineItem>) => {
-    if (!companySettings || !activeCustomer) return;
-    
     const items = [...lineItems];
     const baseItem = { ...items[idx], ...updatedItem };
     
@@ -179,8 +177,8 @@ export default function CreateInvoicePage() {
 
     const calculated = updateLineCalculations(
       baseItem,
-      activeCustomer.state,
-      companySettings.state || "Maharashtra"
+      activeCustomer?.state || "Maharashtra",
+      companySettings?.state || "Maharashtra"
     );
 
     items[idx] = calculated;
