@@ -32,15 +32,26 @@ model Company {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  role      Role     @default(OWNER)
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  phone         String?
+  role          UserRole @default(SITE_MANAGER)
+  status        UserStatus @default(ACTIVE)
+  siteAccess    SiteAccess[]
+  createdById   String?                        // which Admin created this user
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
-enum Role {
-  OWNER
+enum UserRole {
+  ADMIN
+  SITE_MANAGER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
 }
 
 model Customer {
@@ -98,6 +109,7 @@ model Product {
   imageUrl      String?
   status        ProductStatus @default(ACTIVE)
   invoiceItems  InvoiceItem[]
+  materialIssues MaterialIssue[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -296,6 +308,7 @@ model Worker {
   upiId           String?
   salarySlips     SalarySlip[]
   attendance      Attendance[]
+  laborDeployments LaborDeployment[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -314,14 +327,107 @@ enum SalaryType {
 }
 
 model Attendance {
-  id            String   @id @default(cuid())
-  workerId      String
-  worker        Worker   @relation(fields: [workerId], references: [id])
-  date          DateTime
-  status        AttendanceStatus   // PRESENT, ABSENT, HALF_DAY, LEAVE, HOLIDAY
-  overtimeHours Decimal @default(0)
-  notes         String?
-  createdAt     DateTime @default(now())
+  id              String           @id @default(cuid())
+  workerId        String
+  worker          Worker           @relation(fields: [workerId], references: [id])
+  date            DateTime
+  status          AttendanceStatus // PRESENT, ABSENT, HALF_DAY, LEAVE, HOLIDAY
+  overtimeHours   Decimal          @default(0)
+  notes           String?
+  siteId          String?
+  site            Site?            @relation(fields: [siteId], references: [id])
+  createdByUserId String?
+  createdByName   String?
+  createdAt       DateTime         @default(now())
+}
+
+model SiteAccess {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  contractId  String
+  contract    Contract @relation(fields: [contractId], references: [id])
+  siteId      String?                          // null = access to all sites under that contract
+  site        Site?    @relation(fields: [siteId], references: [id])
+  permissions Json                              // { attendance: boolean, measurement: boolean, materialRequest: boolean, viewProgress: boolean }
+  grantedAt   DateTime @default(now())
+  grantedBy   String                            // Admin userId who granted it
+
+  @@unique([userId, contractId, siteId])
+}
+
+model Contract {
+  id             String       @id @default(cuid())
+  contractNumber String       @unique
+  name           String
+  description    String?
+  sites          Site[]
+  siteAccess     SiteAccess[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Site {
+  id                String             @id @default(cuid())
+  contractId        String
+  contract          Contract           @relation(fields: [contractId], references: [id])
+  name              String
+  location          String?
+  siteAccess        SiteAccess[]
+  measurementSheets MeasurementSheet[]
+  materialIssues    MaterialIssue[]
+  attendanceRecords Attendance[]
+  laborDeployments  LaborDeployment[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model LaborDeployment {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id])
+  workerId  String
+  worker    Worker   @relation(fields: [workerId], references: [id])
+  date      DateTime
+  hours     Decimal
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MeasurementSheet {
+  id              String   @id @default(cuid())
+  siteId          String
+  site            Site     @relation(fields: [siteId], references: [id])
+  boqItem         String
+  description     String?
+  qty             Decimal
+  rate            Decimal
+  amount          Decimal
+  createdByUserId String
+  createdByName   String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model MaterialIssue {
+  id              String         @id @default(cuid())
+  siteId          String
+  site            Site           @relation(fields: [siteId], references: [id])
+  productId       String
+  product         Product        @relation(fields: [productId], references: [id])
+  qty             Decimal
+  reason          String?
+  approvalStatus  ApprovalStatus @default(PENDING)
+  createdByUserId String
+  createdByName   String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 enum AttendanceStatus {

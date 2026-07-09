@@ -22,47 +22,53 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    borderBottomWidth: 1.5,
-    borderBottomColor: "#475569",
+    borderTopWidth: 3,
+    borderTopColor: "#1e3a8a",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+    paddingTop: 12,
     paddingBottom: 15,
     marginBottom: 15,
   },
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
   },
   logo: {
-    width: 50,
-    height: 50,
-    borderRadius: 6,
+    width: 46,
+    height: 46,
+    borderRadius: 4,
+    marginRight: 10,
   },
   companyName: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#0f172a",
+    letterSpacing: -0.3,
   },
   companySub: {
-    fontSize: 7,
-    color: "#64748b",
-    letterSpacing: 2,
-    marginTop: 2,
+    fontSize: 6.5,
+    color: "#475569",
+    letterSpacing: 1.8,
+    marginTop: 3,
     textTransform: "uppercase",
+    fontWeight: "bold",
   },
   companyDetails: {
     alignItems: "flex-end",
     maxWidth: 240,
   },
   companyDetailText: {
-    fontSize: 8,
+    fontSize: 7.5,
     color: "#475569",
+    lineHeight: 1.35,
   },
   invoiceTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#0f172a",
-    letterSpacing: 1.5,
-    marginBottom: 2,
+    color: "#1e3a8a",
+    letterSpacing: 2,
+    marginBottom: 4,
     textTransform: "uppercase",
   },
   infoSection: {
@@ -247,32 +253,38 @@ const modernStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: "#0f172a", // Dark charcoal primary header block
-    padding: 15,
+    borderLeftWidth: 4,
+    borderLeftColor: "#3b82f6", // Premium electric blue accent
+    paddingHorizontal: 18,
+    paddingVertical: 16,
     borderRadius: 6,
     marginBottom: 15,
   },
   companyName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#f8fafc",
-  },
-  companySub: {
-    fontSize: 7,
-    color: "#f59e0b", // Amber secondary accent text
-    letterSpacing: 2,
-    marginTop: 2,
-    textTransform: "uppercase",
-  },
-  companyDetailText: {
-    fontSize: 8,
-    color: "#cbd5e1",
-  },
-  invoiceTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#f8fafc",
-    letterSpacing: 1.5,
-    marginBottom: 2,
+    color: "#ffffff",
+    letterSpacing: -0.3,
+  },
+  companySub: {
+    fontSize: 6.5,
+    color: "#38bdf8", // Premium cyan tagline color for readability on dark backgrounds
+    letterSpacing: 1.8,
+    marginTop: 3,
+    textTransform: "uppercase",
+    fontWeight: "bold",
+  },
+  companyDetailText: {
+    fontSize: 7.5,
+    color: "#cbd5e1",
+    lineHeight: 1.35,
+  },
+  invoiceTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#ffffff",
+    letterSpacing: 2,
+    marginBottom: 4,
     textTransform: "uppercase",
   },
 });
@@ -359,10 +371,16 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice, company
           <View style={s.companyDetails}>
             <Text style={s.invoiceTitle}>GST Tax Invoice</Text>
             <Text style={s.companyDetailText}>{company.address}</Text>
-            {company.phone && <Text style={s.companyDetailText}>Ph: {company.phone}</Text>}
-            {company.email && <Text style={s.companyDetailText}>Email: {company.email}</Text>}
-            <Text style={[s.companyDetailText, { marginTop: 4, fontWeight: "bold" }]}>GSTIN: {company.gstin || "URD"}</Text>
-            {company.pan && <Text style={s.companyDetailText}>PAN: {company.pan}</Text>}
+            <View style={{ flexDirection: "row", marginTop: 2 }}>
+              {company.phone && <Text style={s.companyDetailText}>Ph: {company.phone}</Text>}
+              {company.phone && company.email && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: isModern ? "#475569" : "#cbd5e1" }]}>|</Text>}
+              {company.email && <Text style={s.companyDetailText}>Email: {company.email}</Text>}
+            </View>
+            <View style={{ flexDirection: "row", marginTop: 4, backgroundColor: isModern ? "#1e293b" : "#f8fafc", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 0.5, borderColor: isModern ? "#334155" : "#e2e8f0", alignItems: "center" }}>
+              <Text style={[s.companyDetailText, { fontWeight: "bold", color: isModern ? "#ffffff" : "#0f172a" }]}>GSTIN: {company.gstin || "URD"}</Text>
+              {company.pan && <Text style={[s.companyDetailText, { marginHorizontal: 4, color: isModern ? "#475569" : "#cbd5e1" }]}>|</Text>}
+              {company.pan && <Text style={[s.companyDetailText, { fontWeight: "bold", color: isModern ? "#ffffff" : "#0f172a" }]}>PAN: {company.pan}</Text>}
+            </View>
           </View>
         </View>
 

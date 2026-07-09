@@ -37,6 +37,7 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [userEmail, setUserEmail] = React.useState<string | null>(null);
+  const [userRole, setUserRole] = React.useState<string | null>(null);
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
 
   React.useEffect(() => {
@@ -59,8 +60,10 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
       try {
         const session = JSON.parse(sessionStr);
         setUserEmail(session.user?.email || "owner@bk.com");
+        setUserRole(session.user?.role || "ADMIN");
       } catch (e) {
         setUserEmail("owner@bk.com");
+        setUserRole("ADMIN");
       }
     } else {
       // If no session, redirect to login (unless we are already there)
@@ -75,24 +78,31 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
     router.push("/login");
   };
 
-  const navItems = [
+  const isSiteManager = userRole === "SITE_MANAGER";
+
+  const allNavItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, disabled: false },
-    { name: "Invoices", href: "/invoices", icon: FileText, disabled: false },
-    { name: "Workers", href: "/workers", icon: HardHat, disabled: false },
+    { name: "Invoices", href: "/invoices", icon: FileText, disabled: false, adminOnly: true },
+    { name: "Workers", href: "/workers", icon: HardHat, disabled: false, adminOnly: true },
     { name: "Daily Attendance", href: "/attendance", icon: CalendarCheck, disabled: false },
-    { name: "Salary Slips", href: "/salary-slips", icon: Receipt, disabled: false },
-    { name: "Quotations", href: "/quotations", icon: ClipboardList, disabled: false },
-    { name: "Payments", href: "/payments", icon: Wallet, disabled: false },
-    { name: "Work Orders", href: "/workorders", icon: Briefcase, disabled: false },
-    { name: "Purchases", href: "/purchases", icon: ShoppingBag, disabled: false },
-    { name: "Inventory", href: "/inventory", icon: Package, disabled: false },
-    { name: "Expenses", href: "/expenses", icon: Coins, disabled: false },
-    { name: "Documents", href: "/documents", icon: FolderOpen, disabled: false },
-    { name: "Customers", href: "/customers", icon: Users, disabled: false },
-    { name: "Products", href: "/products", icon: Package, disabled: false },
-    { name: "Reports", href: "/reports", icon: BarChart3, disabled: false },
-    { name: "Settings", href: "/settings", icon: Settings, disabled: false },
+    { name: "Salary Slips", href: "/salary-slips", icon: Receipt, disabled: false, adminOnly: true },
+    { name: "Quotations", href: "/quotations", icon: ClipboardList, disabled: false, adminOnly: true },
+    { name: "Payments", href: "/payments", icon: Wallet, disabled: false, adminOnly: true },
+    { name: "Work Orders", href: "/workorders", icon: Briefcase, disabled: false, adminOnly: true },
+    { name: "Purchases", href: "/purchases", icon: ShoppingBag, disabled: false, adminOnly: true },
+    { name: "Inventory", href: "/inventory", icon: Package, disabled: false, adminOnly: true },
+    { name: "Expenses", href: "/expenses", icon: Coins, disabled: false, adminOnly: true },
+    { name: "Documents", href: "/documents", icon: FolderOpen, disabled: false, adminOnly: true },
+    { name: "Customers", href: "/customers", icon: Users, disabled: false, adminOnly: true },
+    { name: "Products", href: "/products", icon: Package, disabled: false, adminOnly: true },
+    { name: "Reports", href: "/reports", icon: BarChart3, disabled: false, adminOnly: true },
+    { name: "Settings", href: "/settings", icon: Settings, disabled: false, adminOnly: true },
   ];
+
+  const navItems = allNavItems.filter(item => {
+    if (isSiteManager && item.adminOnly) return false;
+    return true;
+  });
 
 
   return (

@@ -41,6 +41,18 @@ export default function LoginPage() {
     setErrorMsg(null);
 
     try {
+      // Fetch user profile to verify status and role
+      const profileRes = await fetch(`/api/users/profile?email=${encodeURIComponent(data.email)}`);
+      const profile = await profileRes.json();
+
+      if (!profileRes.ok || !profile) {
+        throw new Error(profile?.error || "You are not authorized to log into this ERP.");
+      }
+
+      if (profile.status === "INACTIVE") {
+        throw new Error("Your account is deactivated. Please contact the administrator.");
+      }
+
       // Check if Supabase keys are placeholder
       const isPlaceholder = 
         !process.env.NEXT_PUBLIC_SUPABASE_URL || 
@@ -52,8 +64,14 @@ export default function LoginPage() {
         
         // Save mock session
         localStorage.setItem("bk_session", JSON.stringify({
-          user: { email: data.email, name: "Owner" },
-          token: "mock-jwt-token",
+          user: { 
+            id: profile.id, 
+            email: profile.email, 
+            name: profile.name,
+            role: profile.role,
+            status: profile.status
+          },
+          token: data.email, // Use email as the mock token
           isMock: true
         }));
         
@@ -62,14 +80,28 @@ export default function LoginPage() {
       }
 
       // Real Supabase Authentication
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
-      if (error) {
-        throw error;
+      if (authError) {
+        throw authError;
       }
+
+      const sessionToken = authData.session?.access_token || "";
+
+      localStorage.setItem("bk_session", JSON.stringify({
+        user: { 
+          id: profile.id, 
+          email: profile.email, 
+          name: profile.name,
+          role: profile.role,
+          status: profile.status
+        },
+        token: sessionToken,
+        isMock: false
+      }));
 
       router.push("/dashboard");
     } catch (err: any) {

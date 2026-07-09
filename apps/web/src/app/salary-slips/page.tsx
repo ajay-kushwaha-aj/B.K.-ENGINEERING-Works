@@ -248,9 +248,13 @@ export default function SalarySlipsPage() {
   const handleDownloadPdf = async (slip: any) => {
     try {
       setDownloadingId(slip.id);
+      const themeChoice = confirm("Download using the Modern theme? (Cancel for Classic Standard)")
+        ? "modern"
+        : "classic";
+
       const { pdf } = await import("@react-pdf/renderer");
       const { SalarySlipPdfDocument } = await import("@/components/salary-slip-pdf");
-      const doc = <SalarySlipPdfDocument slip={slip} companySettings={companySettings} />;
+      const doc = <SalarySlipPdfDocument slip={slip} companySettings={companySettings} theme={themeChoice} />;
       const blob = await pdf(doc).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -267,9 +271,13 @@ export default function SalarySlipsPage() {
 
   const handlePrintPdf = async (slip: any) => {
     try {
+      const themeChoice = confirm("Print using the Modern theme? (Cancel for Classic Standard)")
+        ? "modern"
+        : "classic";
+
       const { pdf } = await import("@react-pdf/renderer");
       const { SalarySlipPdfDocument } = await import("@/components/salary-slip-pdf");
-      const doc = <SalarySlipPdfDocument slip={slip} companySettings={companySettings} />;
+      const doc = <SalarySlipPdfDocument slip={slip} companySettings={companySettings} theme={themeChoice} />;
       const blob = await pdf(doc).toBlob();
       const url = URL.createObjectURL(blob);
 

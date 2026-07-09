@@ -240,4 +240,92 @@ export const SalarySlipSchema = z.object({
 
 export type SalarySlipType = z.infer<typeof SalarySlipSchema>;
 
+export const UserRoleSchema = z.enum(["ADMIN", "SITE_MANAGER"]);
+export type UserRoleType = z.infer<typeof UserRoleSchema>;
+
+export const UserStatusSchema = z.enum(["ACTIVE", "INACTIVE"]);
+export type UserStatusType = z.infer<typeof UserStatusSchema>;
+
+export const UserSchema = z.object({
+  id: z.string().optional(),
+  email: z.string().email("Invalid email address"),
+  name: z.string().min(1, "Name is required"),
+  phone: z.string().nullable().optional(),
+  role: UserRoleSchema.default("SITE_MANAGER"),
+  status: UserStatusSchema.default("ACTIVE"),
+  createdById: z.string().nullable().optional(),
+  createdAt: z.union([z.date(), z.string()]).optional(),
+  updatedAt: z.union([z.date(), z.string()]).optional(),
+});
+export type UserType = z.infer<typeof UserSchema>;
+
+export const SiteAccessSchema = z.object({
+  id: z.string().optional(),
+  userId: z.string().min(1, "User ID is required"),
+  contractId: z.string().min(1, "Contract ID is required"),
+  siteId: z.string().nullable().optional(),
+  permissions: z.object({
+    attendance: z.boolean().default(false),
+    measurement: z.boolean().default(false),
+    materialRequest: z.boolean().default(false),
+    viewProgress: z.boolean().default(true),
+  }),
+  grantedAt: z.union([z.date(), z.string()]).optional(),
+  grantedBy: z.string(),
+});
+export type SiteAccessType = z.infer<typeof SiteAccessSchema>;
+
+export const ContractSchema = z.object({
+  id: z.string().optional(),
+  contractNumber: z.string().min(1, "Contract number is required"),
+  name: z.string().min(1, "Contract name is required"),
+  description: z.string().nullable().optional(),
+});
+export type ContractType = z.infer<typeof ContractSchema>;
+
+export const SiteSchema = z.object({
+  id: z.string().optional(),
+  contractId: z.string().min(1, "Contract ID is required"),
+  name: z.string().min(1, "Site name is required"),
+  location: z.string().nullable().optional(),
+});
+export type SiteType = z.infer<typeof SiteSchema>;
+
+export const LaborDeploymentSchema = z.object({
+  id: z.string().optional(),
+  siteId: z.string().min(1, "Site ID is required"),
+  workerId: z.string().min(1, "Worker ID is required"),
+  date: z.union([z.date(), z.string()]),
+  hours: z.number().min(0),
+});
+export type LaborDeploymentType = z.infer<typeof LaborDeploymentSchema>;
+
+export const MeasurementSheetSchema = z.object({
+  id: z.string().optional(),
+  siteId: z.string().min(1, "Site ID is required"),
+  boqItem: z.string().min(1, "BOQ item is required"),
+  description: z.string().nullable().optional(),
+  qty: z.number().gt(0, "Quantity must be greater than 0"),
+  rate: z.number().min(0, "Rate must be non-negative"),
+  amount: z.number().default(0),
+  createdByUserId: z.string().optional(),
+  createdByName: z.string().optional(),
+});
+export type MeasurementSheetType = z.infer<typeof MeasurementSheetSchema>;
+
+export const ApprovalStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED"]);
+export type ApprovalStatusType = z.infer<typeof ApprovalStatusSchema>;
+
+export const MaterialIssueSchema = z.object({
+  id: z.string().optional(),
+  siteId: z.string().min(1, "Site ID is required"),
+  productId: z.string().min(1, "Product ID is required"),
+  qty: z.number().gt(0, "Quantity must be greater than 0"),
+  reason: z.string().nullable().optional(),
+  approvalStatus: ApprovalStatusSchema.default("PENDING"),
+  createdByUserId: z.string().optional(),
+  createdByName: z.string().optional(),
+});
+export type MaterialIssueType = z.infer<typeof MaterialIssueSchema>;
+
 

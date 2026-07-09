@@ -219,6 +219,176 @@ export interface MockSalarySlip {
   generatedAt: string;
 }
 
+export interface MockUser {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  role: "ADMIN" | "SITE_MANAGER";
+  status: "ACTIVE" | "INACTIVE";
+  createdById: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MockSiteAccess {
+  id: string;
+  userId: string;
+  contractId: string;
+  siteId: string | null; // null = access to all sites under that contract
+  permissions: {
+    attendance: boolean;
+    measurement: boolean;
+    materialRequest: boolean;
+    viewProgress: boolean;
+  };
+  grantedAt: string;
+  grantedBy: string;
+}
+
+export interface MockContract {
+  id: string;
+  contractNumber: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MockSite {
+  id: string;
+  contractId: string;
+  name: string;
+  location: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MockMeasurementSheet {
+  id: string;
+  siteId: string;
+  boqItem: string;
+  description: string | null;
+  qty: number;
+  rate: number;
+  amount: number;
+  createdByUserId: string;
+  createdByName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MockMaterialIssue {
+  id: string;
+  siteId: string;
+  productId: string;
+  qty: number;
+  reason: string | null;
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+  createdByUserId: string;
+  createdByName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MockLaborDeployment {
+  id: string;
+  siteId: string;
+  workerId: string;
+  date: string;
+  hours: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const initialUsers: MockUser[] = [
+  {
+    id: "usr_admin",
+    email: "admin@bk.com",
+    name: "Owner Admin",
+    phone: "+91 9999999999",
+    role: "ADMIN",
+    status: "ACTIVE",
+    createdById: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "usr_manager",
+    email: "manager@bk.com",
+    name: "Site Manager A",
+    phone: "+91 8888888888",
+    role: "SITE_MANAGER",
+    status: "ACTIVE",
+    createdById: "usr_admin",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+];
+
+const initialContracts: MockContract[] = [
+  {
+    id: "con_1",
+    contractNumber: "BK-CON-2026-001",
+    name: "Somaiya Plant Maintenance",
+    description: "Somaiya Plant piping erection and welding contracts",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "con_2",
+    contractNumber: "BK-CON-2026-002",
+    name: "Baramati Agros Erection Project",
+    description: "Erection of new boiler system at Baramati",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+];
+
+const initialSites: MockSite[] = [
+  {
+    id: "site_1",
+    contractId: "con_1",
+    name: "Boiler House Section",
+    location: "Sameerwadi, Bagalkot",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "site_2",
+    contractId: "con_1",
+    name: "Turbine Piping Hall",
+    location: "Sameerwadi, Bagalkot",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "site_3",
+    contractId: "con_2",
+    name: "Agro Boiler Site",
+    location: "Baramati, Pune",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+];
+
+const initialSiteAccess: MockSiteAccess[] = [
+  {
+    id: "acc_1",
+    userId: "usr_manager",
+    contractId: "con_1",
+    siteId: "site_1",
+    permissions: {
+      attendance: true,
+      measurement: true,
+      materialRequest: true,
+      viewProgress: true
+    },
+    grantedAt: new Date().toISOString(),
+    grantedBy: "usr_admin"
+  }
+];
+
 
 // Initial Sample Data
 const initialCustomers: MockCustomer[] = [
@@ -462,6 +632,13 @@ if (!globalStore.mockDocuments) globalStore.mockDocuments = initialDocuments;
 if (!globalStore.mockWorkers) globalStore.mockWorkers = initialWorkers;
 if (!globalStore.mockAttendance) globalStore.mockAttendance = [];
 if (!globalStore.mockSalarySlips) globalStore.mockSalarySlips = [];
+if (!globalStore.mockUsers) globalStore.mockUsers = initialUsers;
+if (!globalStore.mockContracts) globalStore.mockContracts = initialContracts;
+if (!globalStore.mockSites) globalStore.mockSites = initialSites;
+if (!globalStore.mockSiteAccess) globalStore.mockSiteAccess = initialSiteAccess;
+if (!globalStore.mockMeasurementSheets) globalStore.mockMeasurementSheets = [];
+if (!globalStore.mockMaterialIssues) globalStore.mockMaterialIssues = [];
+if (!globalStore.mockLaborDeployments) globalStore.mockLaborDeployments = [];
 
 export const mockDb = {
 
@@ -904,6 +1081,144 @@ export const mockDb = {
     return updated;
   },
 
+  // User & Permission Management methods
+  getUsers: () => globalStore.mockUsers as MockUser[],
+  getUserById: (id: string) => (globalStore.mockUsers as MockUser[]).find(u => u.id === id),
+  getUserByEmail: (email: string) => (globalStore.mockUsers as MockUser[]).find(u => u.email.toLowerCase() === email.toLowerCase()),
+  addUser: (user: Omit<MockUser, "id" | "createdAt" | "updatedAt">) => {
+    const newU: MockUser = {
+      ...user,
+      id: `usr_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalStore.mockUsers.push(newU);
+    return newU;
+  },
+  updateUser: (id: string, data: Partial<MockUser>) => {
+    const idx = globalStore.mockUsers.findIndex((u: any) => u.id === id);
+    if (idx === -1) return null;
+    const updated = {
+      ...globalStore.mockUsers[idx],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    globalStore.mockUsers[idx] = updated;
+    return updated;
+  },
+
+  // Site Access methods
+  getSiteAccess: () => globalStore.mockSiteAccess as MockSiteAccess[],
+  getSiteAccessByUser: (userId: string) => (globalStore.mockSiteAccess as MockSiteAccess[]).filter(s => s.userId === userId),
+  addSiteAccess: (access: Omit<MockSiteAccess, "id" | "grantedAt">) => {
+    const newAccess: MockSiteAccess = {
+      ...access,
+      id: `acc_${Date.now()}`,
+      grantedAt: new Date().toISOString(),
+    };
+    globalStore.mockSiteAccess.push(newAccess);
+    return newAccess;
+  },
+  deleteSiteAccess: (id: string) => {
+    const idx = globalStore.mockSiteAccess.findIndex((s: any) => s.id === id);
+    if (idx === -1) return false;
+    globalStore.mockSiteAccess.splice(idx, 1);
+    return true;
+  },
+  deleteSiteAccessByUser: (userId: string) => {
+    globalStore.mockSiteAccess = (globalStore.mockSiteAccess as MockSiteAccess[]).filter(s => s.userId !== userId);
+  },
+
+  // Contract methods
+  getContracts: () => globalStore.mockContracts as MockContract[],
+  getContractById: (id: string) => (globalStore.mockContracts as MockContract[]).find(c => c.id === id),
+  addContract: (contract: Omit<MockContract, "id" | "createdAt" | "updatedAt">) => {
+    const newCon: MockContract = {
+      ...contract,
+      id: `con_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalStore.mockContracts.push(newCon);
+    return newCon;
+  },
+
+  // Site methods
+  getSites: () => globalStore.mockSites as MockSite[],
+  getSitesByContract: (contractId: string) => (globalStore.mockSites as MockSite[]).filter(s => s.contractId === contractId),
+  getSiteById: (id: string) => (globalStore.mockSites as MockSite[]).find(s => s.id === id),
+  addSite: (site: Omit<MockSite, "id" | "createdAt" | "updatedAt">) => {
+    const newSite: MockSite = {
+      ...site,
+      id: `site_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalStore.mockSites.push(newSite);
+    return newSite;
+  },
+
+  // Measurement Sheet methods
+  getMeasurementSheets: () => globalStore.mockMeasurementSheets as MockMeasurementSheet[],
+  getMeasurementSheetsBySite: (siteId: string) => (globalStore.mockMeasurementSheets as MockMeasurementSheet[]).filter(m => m.siteId === siteId),
+  addMeasurementSheet: (m: Omit<MockMeasurementSheet, "id" | "amount" | "createdAt" | "updatedAt">) => {
+    const newSheet: MockMeasurementSheet = {
+      ...m,
+      id: `sheet_${Date.now()}`,
+      amount: Number(m.qty) * Number(m.rate),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalStore.mockMeasurementSheets.push(newSheet);
+    return newSheet;
+  },
+
+  // Material Issue methods
+  getMaterialIssues: () => globalStore.mockMaterialIssues as MockMaterialIssue[],
+  getMaterialIssuesBySite: (siteId: string) => (globalStore.mockMaterialIssues as MockMaterialIssue[]).filter(m => m.siteId === siteId),
+  addMaterialIssue: (m: Omit<MockMaterialIssue, "id" | "approvalStatus" | "createdAt" | "updatedAt">) => {
+    const newIssue: MockMaterialIssue = {
+      ...m,
+      id: `issue_${Date.now()}`,
+      approvalStatus: "PENDING",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalStore.mockMaterialIssues.push(newIssue);
+    return newIssue;
+  },
+  updateMaterialIssueStatus: (id: string, status: "APPROVED" | "REJECTED") => {
+    const idx = globalStore.mockMaterialIssues.findIndex((m: any) => m.id === id);
+    if (idx === -1) return null;
+    const issue = globalStore.mockMaterialIssues[idx];
+    issue.approvalStatus = status;
+    issue.updatedAt = new Date().toISOString();
+
+    // approval triggers StockMovement OUT logic
+    if (status === "APPROVED") {
+      mockDb.addStockMovement({
+        productId: issue.productId,
+        type: "OUT",
+        qty: Number(issue.qty),
+        reason: `Material Issue Approval ${issue.id} at site ${issue.siteId}`,
+      });
+    }
+    return issue;
+  },
+
+  // Labor Deployment methods
+  getLaborDeployments: () => globalStore.mockLaborDeployments as MockLaborDeployment[],
+  addLaborDeployment: (l: Omit<MockLaborDeployment, "id" | "createdAt" | "updatedAt">) => {
+    const newDep: MockLaborDeployment = {
+      ...l,
+      id: `dep_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalStore.mockLaborDeployments.push(newDep);
+    return newDep;
+  },
+
   // Dump and Restore full JSON backup
   dumpDatabase: () => {
     return {
@@ -921,6 +1236,13 @@ export const mockDb = {
       workers: globalStore.mockWorkers,
       attendance: globalStore.mockAttendance,
       salarySlips: globalStore.mockSalarySlips,
+      users: globalStore.mockUsers,
+      contracts: globalStore.mockContracts,
+      sites: globalStore.mockSites,
+      siteAccess: globalStore.mockSiteAccess,
+      measurementSheets: globalStore.mockMeasurementSheets,
+      materialIssues: globalStore.mockMaterialIssues,
+      laborDeployments: globalStore.mockLaborDeployments,
     };
   },
   restoreDatabase: (data: any) => {
@@ -938,6 +1260,13 @@ export const mockDb = {
     if (data.workers) globalStore.mockWorkers = data.workers;
     if (data.attendance) globalStore.mockAttendance = data.attendance;
     if (data.salarySlips) globalStore.mockSalarySlips = data.salarySlips;
+    if (data.users) globalStore.mockUsers = data.users;
+    if (data.contracts) globalStore.mockContracts = data.contracts;
+    if (data.sites) globalStore.mockSites = data.sites;
+    if (data.siteAccess) globalStore.mockSiteAccess = data.siteAccess;
+    if (data.measurementSheets) globalStore.mockMeasurementSheets = data.measurementSheets;
+    if (data.materialIssues) globalStore.mockMaterialIssues = data.materialIssues;
+    if (data.laborDeployments) globalStore.mockLaborDeployments = data.laborDeployments;
     return true;
   },
 };
