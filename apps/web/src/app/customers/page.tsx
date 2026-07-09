@@ -62,6 +62,22 @@ export default function CustomersPage() {
   }, [fetchCustomers]);
 
   const openAddModal = () => {
+    // Get company settings default terms to pre-fill
+    let defaultTerms = "1. Interest @ 18% p.a. will be charged for delayed payment beyond 30 days.\n2. Any dispute subject to local jurisdiction only.\n3. Goods once sold will not be taken back.";
+    if (typeof window !== "undefined") {
+      const savedSettings = localStorage.getItem("bk_company_settings");
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          if (parsed.termsDefault) {
+            defaultTerms = parsed.termsDefault;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
     setEditingCustomer(null);
     reset({
       name: "",
@@ -75,7 +91,7 @@ export default function CustomersPage() {
       pinCode: "",
       contactPerson: "",
       notes: "",
-      termsDefault: "",
+      termsDefault: defaultTerms,
       status: "ACTIVE",
     });
     setIsModalOpen(true);
@@ -353,10 +369,11 @@ export default function CustomersPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                       label="Phone / Mobile"
                       placeholder="+91 9876543210"
+                      maxLength={15}
                       error={errors.phone?.message}
                       {...register("phone")}
                     />
@@ -367,6 +384,9 @@ export default function CustomersPage() {
                       error={errors.email?.message}
                       {...register("email")}
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-sm font-semibold">State (for Tax Split) *</label>
                       <select
@@ -384,17 +404,6 @@ export default function CustomersPage() {
                         <span className="text-xs text-danger font-medium mt-0.5">{errors.state?.message}</span>
                       )}
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2">
-                      <Input
-                        label="Registered Address"
-                        placeholder="Plot No. 12, Phase 3, Industrial Area"
-                        error={errors.address?.message}
-                        {...register("address")}
-                      />
-                    </div>
                     <Input
                       label="PIN Code"
                       placeholder="400001"
@@ -403,6 +412,13 @@ export default function CustomersPage() {
                       {...register("pinCode")}
                     />
                   </div>
+
+                  <Input
+                    label="Registered Address"
+                    placeholder="Plot No. 12, Phase 3, Industrial Area"
+                    error={errors.address?.message}
+                    {...register("address")}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input

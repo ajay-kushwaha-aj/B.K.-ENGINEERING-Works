@@ -291,6 +291,7 @@ export default function SettingsPage() {
                     <Input
                       label="Phone / Mobile"
                       placeholder="+91 9876543210"
+                      maxLength={15}
                       error={errors.phone?.message}
                       {...register("phone")}
                     />

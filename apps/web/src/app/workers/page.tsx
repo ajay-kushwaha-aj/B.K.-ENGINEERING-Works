@@ -468,6 +468,7 @@ export default function WorkersPage() {
                       <Input
                         label="Phone Number *"
                         placeholder="+91 9876543210"
+                        maxLength={15}
                         error={errors.phone?.message}
                         {...register("phone")}
                       />
