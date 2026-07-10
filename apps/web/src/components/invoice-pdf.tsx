@@ -515,23 +515,18 @@ export const InvoicePdfDocument: React.FC<InvoicePdfProps> = ({ invoice: rawInvo
                 <Text style={styles.totalRowText}>-₹{Number(invoice.discountTotal).toFixed(2)}</Text>
               </View>
             )}
-            {isIntrastate ? (
-              <View>
-                <View style={styles.totalRow}>
-                  <Text style={[styles.metaLabel, styles.totalRowText]}>CGST ({cgstRate}%):</Text>
-                  <Text style={styles.totalRowText}>₹{Number(invoice.cgstTotal).toFixed(2)}</Text>
-                </View>
-                <View style={styles.totalRow}>
-                  <Text style={[styles.metaLabel, styles.totalRowText]}>SGST ({sgstRate}%):</Text>
-                  <Text style={styles.totalRowText}>₹{Number(invoice.sgstTotal).toFixed(2)}</Text>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.totalRow}>
-                <Text style={[styles.metaLabel, styles.totalRowText]}>IGST ({igstRate}%):</Text>
-                <Text style={styles.totalRowText}>₹{Number(invoice.igstTotal).toFixed(2)}</Text>
-              </View>
-            )}
+            <View style={styles.totalRow}>
+              <Text style={[styles.metaLabel, styles.totalRowText]}>CGST ({cgstRate}%):</Text>
+              <Text style={styles.totalRowText}>₹{Number(invoice.cgstTotal).toFixed(2)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={[styles.metaLabel, styles.totalRowText]}>SGST ({sgstRate}%):</Text>
+              <Text style={styles.totalRowText}>₹{Number(invoice.sgstTotal).toFixed(2)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={[styles.metaLabel, styles.totalRowText]}>IGST ({igstRate}%):</Text>
+              <Text style={styles.totalRowText}>₹{Number(invoice.igstTotal).toFixed(2)}</Text>
+            </View>
             <View style={styles.totalRow}>
               <Text style={[styles.metaLabel, styles.totalRowText]}>Total Tax Amount:</Text>
               <Text style={styles.totalRowText}>₹{totalTaxVal.toFixed(2)}</Text>

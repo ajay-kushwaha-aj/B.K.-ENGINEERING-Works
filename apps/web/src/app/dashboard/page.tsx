@@ -314,17 +314,21 @@ function AdminDashboard({ user }: { user: any }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {kpiCards.map((card, idx) => (
               <Card key={idx} className="relative overflow-hidden border border-border/60 shadow-md hover:shadow-lg transition-all duration-300 group bg-card">
-                <CardContent className="p-5 sm:p-6 flex flex-row items-start justify-between gap-3 sm:gap-4">
-                  <div className="space-y-1.5 flex-1 min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 break-words">
+                <CardContent className="p-5 sm:p-6 flex flex-col justify-between h-full min-h-[120px]">
+                  {/* Top Row: Heading and Icon */}
+                  <div className="flex flex-row items-center justify-between gap-3 w-full">
+                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 whitespace-normal leading-tight flex-1">
                       {card.label}
                     </p>
-                    <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight break-words" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                      {card.value}
+                    <div className={`p-2.5 rounded-xl ${card.iconBg} ${card.color} shadow-xs group-hover:scale-105 transition-transform duration-300 flex-shrink-0`}>
+                      <card.icon className="w-5.5 h-5.5" />
                     </div>
                   </div>
-                  <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${card.iconBg} ${card.color} shadow-sm group-hover:scale-105 transition-transform duration-300 flex-shrink-0`}>
-                    <card.icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  {/* Bottom Row: Numbers / Data */}
+                  <div className="mt-4">
+                    <div className="text-2xl sm:text-3xl font-black text-foreground tracking-tight break-all">
+                      {card.value}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

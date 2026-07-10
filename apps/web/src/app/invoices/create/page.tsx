@@ -300,44 +300,44 @@ export default function CreateInvoicePage() {
     <Navigation>
       <div className="space-y-6">
         {/* Wizard Headers */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Create GST Invoice</h1>
+            <h1 className="text-3xl font-black tracking-tight text-foreground bg-gradient-to-r from-foreground via-slate-500 to-foreground bg-clip-text text-transparent">Create GST Invoice</h1>
             <p className="mt-1 text-sm text-muted-foreground">Follow the steps to construct and finalize a tax receipt.</p>
           </div>
           
-          <div className="hidden sm:flex items-center gap-1.5 bg-card border border-border p-1.5 rounded-full text-xs font-semibold">
-            <span className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 ${step === 1 ? "bg-primary text-white" : "text-muted-foreground"}`}>
-              <User size={14} /> Customer
+          <div className="flex items-center gap-1 bg-card border border-border/80 p-1.5 rounded-full text-xs font-semibold shadow-xs">
+            <span className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${step === 1 ? "bg-primary text-white shadow-sm" : "text-muted-foreground"}`}>
+              <User size={13} /> Customer
             </span>
-            <ChevronRight size={14} className="text-slate-300" />
-            <span className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 ${step === 2 ? "bg-primary text-white" : "text-muted-foreground"}`}>
-              <ShoppingCart size={14} /> Items
+            <ChevronRight size={12} className="text-slate-300 dark:text-slate-700" />
+            <span className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${step === 2 ? "bg-primary text-white shadow-sm" : "text-muted-foreground"}`}>
+              <ShoppingCart size={13} /> Items
             </span>
-            <ChevronRight size={14} className="text-slate-300" />
-            <span className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 ${step === 3 ? "bg-primary text-white" : "text-muted-foreground"}`}>
-              <FileCheck size={14} /> Review
+            <ChevronRight size={12} className="text-slate-300 dark:text-slate-700" />
+            <span className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${step === 3 ? "bg-primary text-white shadow-sm" : "text-muted-foreground"}`}>
+              <FileCheck size={13} /> Review
             </span>
-            <ChevronRight size={14} className="text-slate-300" />
-            <span className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 ${step === 4 ? "bg-emerald-600 text-white" : "text-muted-foreground"}`}>
-              <CheckCircle size={14} /> Finalized
+            <ChevronRight size={12} className="text-slate-300 dark:text-slate-700" />
+            <span className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${step === 4 ? "bg-emerald-600 text-white shadow-sm" : "text-muted-foreground"}`}>
+              <CheckCircle size={13} /> Finalized
             </span>
           </div>
         </div>
 
         {/* STEP 1: Select Customer */}
         {step === 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Step 1: Select Customer Profile</CardTitle>
+          <Card className="border border-border/60 shadow-md rounded-2xl overflow-hidden">
+            <CardHeader className="border-b border-border/40 pb-4">
+              <CardTitle className="text-lg font-bold">Step 1: Select Customer Profile</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-foreground">Client Customer *</label>
+                <label className="text-xs font-extrabold uppercase tracking-wider text-foreground">Client Customer *</label>
                 <select
                   value={selectedCustomerId}
                   onChange={(e) => setSelectedCustomerId(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary cursor-pointer"
+                  className="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-background px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:border-secondary cursor-pointer transition-all shadow-xs"
                 >
                   <option value="">-- Choose Customer --</option>
                   {customers.map((c) => (
@@ -348,35 +348,37 @@ export default function CreateInvoicePage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
                   label="Invoice Date *"
                   type="date"
                   value={invoiceDate}
                   onChange={(e) => setInvoiceDate(e.target.value)}
+                  className="rounded-xl"
                 />
                 <Input
                   label="Due Date"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
+                  className="rounded-xl"
                 />
               </div>
 
               {activeCustomer && (
-                <div className="p-4 bg-muted/50 rounded-xl border border-border/60 text-sm space-y-2">
-                  <h4 className="font-bold text-foreground text-base">Selected Customer Details</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-muted-foreground mt-2">
-                    <p><span className="font-semibold text-foreground">Billing Address:</span> {activeCustomer.address}</p>
-                    <p><span className="font-semibold text-foreground">State Tax Jurisdiction:</span> {activeCustomer.state}</p>
-                    <p><span className="font-semibold text-foreground">GSTIN:</span> {activeCustomer.gstin || "Unregistered (URD)"}</p>
-                    <p><span className="font-semibold text-foreground">Contact details:</span> {activeCustomer.phone || "—"} {activeCustomer.email || ""}</p>
+                <div className="p-5 bg-muted/40 rounded-2xl border border-border text-sm space-y-3 shadow-xs">
+                  <h4 className="font-extrabold text-foreground text-base tracking-tight border-b border-border pb-1.5">Selected Customer Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-muted-foreground mt-2">
+                    <p><span className="font-bold text-foreground block text-xs uppercase tracking-wider mb-0.5">Billing Address</span> <span className="text-foreground/90 font-medium">{activeCustomer.address}</span></p>
+                    <p><span className="font-bold text-foreground block text-xs uppercase tracking-wider mb-0.5">State Tax Jurisdiction</span> <span className="text-foreground/90 font-medium">{activeCustomer.state}</span></p>
+                    <p><span className="font-bold text-foreground block text-xs uppercase tracking-wider mb-0.5">GSTIN</span> <span className="font-mono text-foreground font-semibold bg-background px-2 py-0.5 rounded border border-border">{activeCustomer.gstin || "Unregistered (URD)"}</span></p>
+                    <p><span className="font-bold text-foreground block text-xs uppercase tracking-wider mb-0.5">Contact Details</span> <span className="text-foreground/90 font-medium">{activeCustomer.phone || "—"} {activeCustomer.email || ""}</span></p>
                   </div>
                 </div>
               )}
             </CardContent>
-            <CardFooter className="justify-end">
-              <Button onClick={handleNextStep} className="flex items-center gap-1">
+            <CardFooter className="justify-end border-t border-border/40 pt-4">
+              <Button onClick={handleNextStep} className="flex items-center gap-1 h-11 px-6 rounded-xl shadow-xs">
                 Next: Add Items <ChevronRight size={16} />
               </Button>
             </CardFooter>
@@ -385,34 +387,34 @@ export default function CreateInvoicePage() {
 
         {/* STEP 2: Line Items */}
         {step === 2 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Step 2: Add Invoiced Goods / Services</CardTitle>
+          <Card className="border border-border/60 shadow-md rounded-2xl overflow-hidden">
+            <CardHeader className="border-b border-border/40 pb-4">
+              <CardTitle className="text-lg font-bold">Step 2: Add Invoiced Goods / Services</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               {/* Product rows table */}
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {lineItems.map((item, idx) => (
-                  <div key={item.id} className="p-4 border border-border rounded-xl bg-muted/30 relative flex flex-col gap-3">
+                  <div key={item.id} className="p-5 border border-border rounded-2xl bg-muted/30 shadow-xs relative flex flex-col gap-4 hover:border-border transition-all">
                     <button
                       type="button"
                       onClick={() => removeLineItem(idx)}
-                      className="absolute top-4 right-4 text-slate-400 hover:text-danger cursor-pointer"
+                      className="absolute top-5 right-5 p-2 rounded-full border border-border bg-card hover:bg-muted text-foreground/70 hover:text-danger hover:border-danger/30 cursor-pointer transition-all shadow-xs"
                       title="Remove Row"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={15} />
                     </button>
                     
-                    <span className="text-xs font-bold text-slate-400">Line Item #{idx + 1}</span>
-
+                    <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold rounded bg-muted text-foreground/80 w-fit border border-border">Line Item #{idx + 1}</span>
+ 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       {/* Product Selector */}
                       <div className="md:col-span-2 flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-foreground">Item Template (Auto-fill)</label>
+                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Item Template (Auto-fill)</label>
                         <select
                           value={item.productId}
                           onChange={(e) => handleItemChange(idx, { productId: e.target.value })}
-                          className="h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary cursor-pointer"
+                          className="h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:border-secondary cursor-pointer transition-all shadow-xs text-foreground font-medium"
                         >
                           <option value="">-- Manual Input / Custom Description --</option>
                           {products.map((p) => (
@@ -420,51 +422,57 @@ export default function CreateInvoicePage() {
                           ))}
                         </select>
                       </div>
-
+ 
                       <Input
                         label="Description of Service/Goods *"
                         value={item.description}
                         onChange={(e) => handleItemChange(idx, { description: e.target.value })}
+                        className="rounded-xl border-border"
                       />
                       
                       <Input
                         label="HSN / SAC Code"
                         value={item.hsnCode}
                         onChange={(e) => handleItemChange(idx, { hsnCode: e.target.value })}
+                        className="rounded-xl border-border font-mono"
                       />
                     </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+ 
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 items-end">
                       <Input
                         label="Qty *"
                         type="number"
                         min="1"
                         value={item.qty}
                         onChange={(e) => handleItemChange(idx, { qty: Number(e.target.value) })}
+                        className="rounded-xl border-border"
                       />
                       <Input
                         label="Unit *"
                         value={item.unit}
                         onChange={(e) => handleItemChange(idx, { unit: e.target.value })}
+                        className="rounded-xl border-border"
                       />
                       <Input
                         label="Rate (₹) *"
                         type="number"
                         value={item.rate}
                         onChange={(e) => handleItemChange(idx, { rate: Number(e.target.value) })}
+                        className="rounded-xl border-border"
                       />
                       <Input
                         label="Discount (₹)"
                         type="number"
                         value={item.discount}
                         onChange={(e) => handleItemChange(idx, { discount: Number(e.target.value) })}
+                        className="rounded-xl border-border"
                       />
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-foreground">GST %</label>
+                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">GST %</label>
                         <select
                           value={item.gstPercent}
                           onChange={(e) => handleItemChange(idx, { gstPercent: Number(e.target.value) })}
-                          className="h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary cursor-pointer"
+                          className="h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:border-secondary cursor-pointer transition-all shadow-xs text-foreground font-medium"
                         >
                           <option value={18}>18%</option>
                           <option value={12}>12%</option>
@@ -473,16 +481,33 @@ export default function CreateInvoicePage() {
                           <option value={0}>0%</option>
                         </select>
                       </div>
-                      <div className="flex flex-col justify-end pb-3 text-right">
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Line Total</span>
-                        <span className="font-bold text-foreground text-base mt-1">₹{item.amount.toFixed(2)}</span>
+                      <div className="flex flex-col justify-center pb-2 text-right">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Line Total</span>
+                        <span className="font-black text-foreground text-lg mt-0.5">₹{item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                       </div>
+                    </div>
+ 
+                    {/* CGST, SGST & IGST breakdown displayed directly on the product row */}
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2.5 p-3 rounded-xl bg-card border border-border text-xs font-bold text-foreground shadow-2xs">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">GST Breakdown:</span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        <span>CGST ({(item.gstPercent / 2)}%): <strong className="text-foreground">₹{item.cgst.toFixed(2)}</strong></span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-teal-500" />
+                        <span>SGST ({(item.gstPercent / 2)}%): <strong className="text-foreground">₹{item.sgst.toFixed(2)}</strong></span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-blue-500" />
+                        <span>IGST ({item.gstPercent}%): <strong className="text-foreground">₹{item.igst.toFixed(2)}</strong></span>
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
-
-              <Button variant="outline" onClick={addLineItem} className="w-full flex items-center justify-center gap-1.5">
+ 
+              <Button variant="outline" onClick={addLineItem} className="w-full h-11 flex items-center justify-center gap-1.5 rounded-xl border-dashed hover:bg-slate-50 dark:hover:bg-slate-900/40">
                 <Plus size={16} /> Add Item Row
               </Button>
             </CardContent>
@@ -590,24 +615,19 @@ export default function CreateInvoicePage() {
                         </div>
                       )}
                       
-                      {/* Intrastate vs Interstate breakdown display */}
-                      {activeCustomer?.state.trim().toLowerCase() === companySettings?.state?.trim().toLowerCase() ? (
-                        <>
-                          <div className="flex justify-between">
-                            <span>CGST ({cgstRate}%):</span>
-                            <span className="text-foreground">₹{cgstTotal.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>SGST ({sgstRate}%):</span>
-                            <span className="text-foreground">₹{sgstTotal.toFixed(2)}</span>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex justify-between">
-                          <span>IGST ({igstRate}%):</span>
-                          <span className="text-foreground">₹{igstTotal.toFixed(2)}</span>
-                        </div>
-                      )}
+                      {/* Intrastate & Interstate breakdown display */}
+                      <div className="flex justify-between">
+                        <span>CGST ({cgstRate}%):</span>
+                        <span className="text-foreground">₹{cgstTotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>SGST ({sgstRate}%):</span>
+                        <span className="text-foreground">₹{sgstTotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>IGST ({igstRate}%):</span>
+                        <span className="text-foreground">₹{igstTotal.toFixed(2)}</span>
+                      </div>
 
                       <div className="flex justify-between border-t border-border/40 pt-2">
                         <span>Total Tax Amount:</span>
@@ -671,20 +691,21 @@ export default function CreateInvoicePage() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+              <div className="flex flex-col sm:flex-row gap-3.5 w-full max-w-md">
                 {isMounted && (
                   <Button
                     onClick={handleDownloadPdf}
                     disabled={isPdfDownloading}
-                    className="flex-1 inline-flex items-center justify-center gap-2 h-11 px-5 text-sm font-semibold rounded-lg bg-primary text-white hover:bg-slate-700 transition-colors cursor-pointer"
+                    size="lg"
+                    className="flex-1 inline-flex items-center justify-center gap-2.5 h-12 px-6 text-xs font-bold uppercase tracking-wider rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white border-none transition-all shadow-md cursor-pointer"
                   >
                     {isPdfDownloading ? (
                       <>
-                        <Loader2 size={16} className="animate-spin" /> Building PDF...
+                        <Loader2 size={15} className="animate-spin" /> Building PDF...
                       </>
                     ) : (
                       <>
-                        <Download size={16} /> Download PDF
+                        <Download size={15} /> Download PDF
                       </>
                     )}
                   </Button>
@@ -692,22 +713,30 @@ export default function CreateInvoicePage() {
 
                 <Button 
                   variant="outline" 
-                  className="flex-1 flex items-center justify-center gap-2"
+                  size="lg"
+                  className="flex-1 flex items-center justify-center gap-2.5 h-12 px-6 text-xs font-bold uppercase tracking-wider rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-all shadow-xs"
                   onClick={() => {
                     const shareText = `Dear Customer, please find attached Invoice ${createdInvoice.invoiceNumber} for ₹${Number(createdInvoice.grandTotal).toLocaleString("en-IN")} from B.K. Engineering Works.`;
                     window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
                   }}
                 >
-                  <Share2 size={16} /> Share via WhatsApp
+                  <Share2 size={15} /> Share via WhatsApp
                 </Button>
               </div>
 
-              <div className="pt-4 border-t border-border/80 w-full max-w-md flex justify-center gap-3">
-                <Button variant="ghost" onClick={() => router.push("/invoices")}>
+              <div className="pt-6 border-t border-border/80 w-full max-w-md flex flex-col sm:flex-row gap-3">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="w-full sm:flex-1 rounded-xl text-xs font-bold uppercase tracking-wider h-12 text-muted-foreground border-border bg-transparent hover:bg-muted hover:text-foreground transition-all shadow-xs"
+                  onClick={() => router.push("/invoices")}
+                >
                   Go to Invoices List
                 </Button>
                 <Button 
                   variant="outline" 
+                  size="lg"
+                  className="w-full sm:flex-1 rounded-xl text-xs font-bold uppercase tracking-wider h-12 text-foreground border-border bg-transparent hover:bg-muted transition-all shadow-xs"
                   onClick={() => {
                     // Reset wizard for new invoice
                     setSelectedCustomerId("");
