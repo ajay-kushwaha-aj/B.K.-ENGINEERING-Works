@@ -137,7 +137,7 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
       {/* Mobile Top Navbar */}
       <header className="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 text-white z-20 print:hidden">
-        <Logo size={48} showText={true} />
+        <Logo size={56} showText={true} />
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-secondary"
@@ -161,7 +161,7 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
-          <Logo size={48} showText={true} />
+          <Logo size={56} showText={true} />
           <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white">
             <X size={20} />
           </button>
@@ -225,7 +225,7 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex md:flex-col md:w-64 bg-slate-900 border-r border-slate-800 text-white flex-shrink-0 print:hidden">
         <div className="p-6 border-b border-slate-800">
-          <Logo size={52} showText={true} />
+          <Logo size={68} showText={true} />
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1.5">
           {navItems.map((item) => {
