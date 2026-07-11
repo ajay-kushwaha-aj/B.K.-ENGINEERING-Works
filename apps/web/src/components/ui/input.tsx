@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -8,6 +9,9 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className = "", type = "text", label, error, id, ...props }, ref) => {
     const inputId = id || React.useId();
+    const [showPassword, setShowPassword] = React.useState(false);
+    const isPassword = type === "password";
+    const inputType = isPassword ? (showPassword ? "text" : "password") : type;
     
     return (
       <div className="w-full flex flex-col gap-1.5">
@@ -16,21 +20,36 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
-          id={inputId}
-          type={type}
-          ref={ref}
-          onFocus={(e) => {
-            if (type === "number") {
-              e.target.select();
-            }
-            props.onFocus?.(e);
-          }}
-          className={`h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
-            error ? "border-danger focus:ring-danger/50 focus:border-danger" : ""
-          } ${className}`}
-          {...props}
-        />
+        <div className="relative flex items-center w-full">
+          <input
+            id={inputId}
+            type={inputType}
+            ref={ref}
+            onFocus={(e) => {
+              if (type === "number") {
+                e.target.select();
+              }
+              props.onFocus?.(e);
+            }}
+            className={`h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+              error ? "border-danger focus:ring-danger/50 focus:border-danger" : ""
+            } ${isPassword ? "pr-10" : ""} ${className}`}
+            {...props}
+          />
+          {isPassword && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 flex items-center justify-center text-muted-foreground hover:text-foreground focus:outline-none transition-colors cursor-pointer"
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
+          )}
+        </div>
         {error && <span className="text-xs text-danger font-medium mt-0.5">{error}</span>}
       </div>
     );
