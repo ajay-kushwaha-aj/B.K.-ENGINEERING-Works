@@ -18,6 +18,7 @@ export async function GET(request: Request) {
     if (requester.role === "ADMIN") {
       const sites = await prisma.site.findMany({
         where: contractId ? { contractId } : {},
+        include: { contract: true },
         orderBy: { name: "asc" }
       });
       return NextResponse.json(sites);
@@ -34,6 +35,7 @@ export async function GET(request: Request) {
     if (hasAllAccess && contractId) {
       const sites = await prisma.site.findMany({
         where: { contractId },
+        include: { contract: true },
         orderBy: { name: "asc" }
       });
       return NextResponse.json(sites);
@@ -46,6 +48,7 @@ export async function GET(request: Request) {
         id: { in: allowedSiteIds },
         ...(contractId && { contractId })
       },
+      include: { contract: true },
       orderBy: { name: "asc" }
     });
 

@@ -24,6 +24,9 @@ import {
   HardHat,
   Receipt,
   CalendarCheck,
+  Loader2,
+  ShieldAlert,
+  MapPin,
 } from "lucide-react";
 
 
@@ -32,6 +35,25 @@ import { supabase } from "@/lib/supabase";
 interface NavigationProps {
   children: React.ReactNode;
 }
+
+const allNavItems = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, disabled: false },
+  { name: "Invoices", href: "/invoices", icon: FileText, disabled: false, adminOnly: true },
+  { name: "Employees", href: "/workers", icon: HardHat, disabled: false, adminOnly: true },
+  { name: "Daily Attendance", href: "/attendance", icon: CalendarCheck, disabled: false },
+  { name: "Site Management", href: "/sites", icon: MapPin, disabled: false, adminOnly: true },
+  { name: "Salary Slips", href: "/salary-slips", icon: Receipt, disabled: false, adminOnly: true },
+  { name: "Payments", href: "/payments", icon: Wallet, disabled: false, adminOnly: true },
+  { name: "Work Orders", href: "/workorders", icon: Briefcase, disabled: false, adminOnly: true },
+  { name: "Purchases", href: "/purchases", icon: ShoppingBag, disabled: false, adminOnly: true },
+  { name: "Inventory", href: "/inventory", icon: Package, disabled: false, adminOnly: true },
+  { name: "Expenses", href: "/expenses", icon: Coins, disabled: false, adminOnly: true },
+  { name: "Documents", href: "/documents", icon: FolderOpen, disabled: false, adminOnly: true },
+  { name: "Customers", href: "/customers", icon: Users, disabled: false, adminOnly: true },
+  { name: "Products", href: "/products", icon: Package, disabled: false, adminOnly: true },
+  { name: "Reports", href: "/reports", icon: BarChart3, disabled: false, adminOnly: true },
+  { name: "Settings", href: "/settings", icon: Settings, disabled: false, adminOnly: true },
+];
 
 export const Navigation: React.FC<NavigationProps> = ({ children }) => {
   const pathname = usePathname();
@@ -60,8 +82,21 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
     if (sessionStr) {
       try {
         const session = JSON.parse(sessionStr);
-        setUserEmail(session.user?.email || "owner@bk.com");
-        setUserRole(session.user?.role || "ADMIN");
+        const email = session.user?.email || "owner@bk.com";
+        const role = session.user?.role || "ADMIN";
+        setUserEmail(email);
+        setUserRole(role);
+
+        // If site manager attempts to access an admin-only path, redirect them
+        const isSiteManager = role === "SITE_MANAGER";
+        const isCurrentPathAdminOnly = allNavItems.some(
+          item => item.adminOnly && (pathname === item.href || pathname.startsWith(item.href + "/"))
+        );
+        if (isSiteManager && isCurrentPathAdminOnly) {
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 2000);
+        }
       } catch (e) {
         setUserEmail("owner@bk.com");
         setUserRole("ADMIN");
@@ -109,23 +144,11 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
 
   const isSiteManager = userRole === "SITE_MANAGER";
 
-  const allNavItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, disabled: false },
-    { name: "Invoices", href: "/invoices", icon: FileText, disabled: false, adminOnly: true },
-    { name: "Employees", href: "/workers", icon: HardHat, disabled: false, adminOnly: true },
-    { name: "Daily Attendance", href: "/attendance", icon: CalendarCheck, disabled: false },
-    { name: "Salary Slips", href: "/salary-slips", icon: Receipt, disabled: false, adminOnly: true },
-    { name: "Payments", href: "/payments", icon: Wallet, disabled: false, adminOnly: true },
-    { name: "Work Orders", href: "/workorders", icon: Briefcase, disabled: false, adminOnly: true },
-    { name: "Purchases", href: "/purchases", icon: ShoppingBag, disabled: false, adminOnly: true },
-    { name: "Inventory", href: "/inventory", icon: Package, disabled: false, adminOnly: true },
-    { name: "Expenses", href: "/expenses", icon: Coins, disabled: false, adminOnly: true },
-    { name: "Documents", href: "/documents", icon: FolderOpen, disabled: false, adminOnly: true },
-    { name: "Customers", href: "/customers", icon: Users, disabled: false, adminOnly: true },
-    { name: "Products", href: "/products", icon: Package, disabled: false, adminOnly: true },
-    { name: "Reports", href: "/reports", icon: BarChart3, disabled: false, adminOnly: true },
-    { name: "Settings", href: "/settings", icon: Settings, disabled: false, adminOnly: true },
-  ];
+
+
+  const isCurrentPathAdminOnly = allNavItems.some(
+    item => item.adminOnly && (pathname === item.href || pathname.startsWith(item.href + "/"))
+  );
 
   const navItems = allNavItems.filter(item => {
     if (isSiteManager && item.adminOnly) return false;
@@ -288,7 +311,21 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 bg-background overflow-y-auto">
         <div className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
-          {children}
+          {!userRole ? (
+            <div className="flex flex-col items-center justify-center py-32">
+              <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            </div>
+          ) : isSiteManager && isCurrentPathAdminOnly ? (
+            <div className="flex flex-col items-center justify-center text-center py-20 space-y-4">
+              <ShieldAlert className="w-16 h-16 text-danger animate-bounce" />
+              <h3 className="text-xl font-bold text-foreground">Access Denied</h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                You do not have permission to access this page. Redirecting you to the Dashboard...
+              </p>
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </main>
 

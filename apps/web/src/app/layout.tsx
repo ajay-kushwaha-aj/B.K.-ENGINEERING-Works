@@ -17,6 +17,11 @@ const monoFont = Space_Grotesk({
 export const metadata: Metadata = {
   title: "B.K. Engineering Works — ERP & GST Billing System",
   description: "Premium, mobile-first responsive GST Billing & ERP platform for B.K. Engineering Works",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

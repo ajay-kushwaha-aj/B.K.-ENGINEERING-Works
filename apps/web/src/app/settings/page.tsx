@@ -23,7 +23,20 @@ import {
   HardHat, 
   Lock, 
   Unlock, 
-  Loader2 
+  Loader2,
+  Building,
+  FileText,
+  CreditCard,
+  Hash,
+  MapPin,
+  Mail,
+  Phone,
+  Landmark,
+  Wallet,
+  Code,
+  QrCode,
+  Scale,
+  X
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -31,10 +44,63 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [statusMsg, setStatusMsg] = React.useState<{ type: "success" | "error"; text: string } | null>(null);
   
+  // Edit permission controls
+  const [isEditable, setIsEditable] = React.useState(false);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = React.useState(false);
+  const [verifyPassword, setVerifyPassword] = React.useState("");
+  const [verifyError, setVerifyError] = React.useState<string | null>(null);
+  const [verifyLoading, setVerifyLoading] = React.useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = React.useState("");
+
   // Local state for image previews
   const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
   const [signaturePreview, setSignaturePreview] = React.useState<string | null>(null);
   const [sealPreview, setSealPreview] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const sessionStr = localStorage.getItem("bk_session");
+    if (sessionStr) {
+      try {
+        const session = JSON.parse(sessionStr);
+        if (session?.user?.email) {
+          setCurrentUserEmail(session.user.email);
+        }
+      } catch (e) {
+        console.error("Failed to load user email:", e);
+      }
+    }
+  }, []);
+
+  const handleVerifyAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setVerifyError(null);
+    setVerifyLoading(true);
+
+    try {
+      if (!currentUserEmail) {
+        throw new Error("No active admin session found. Please log in again.");
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: currentUserEmail,
+        password: verifyPassword,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setIsEditable(true);
+      setIsVerifyModalOpen(false);
+      setVerifyPassword("");
+      setStatusMsg({ type: "success", text: "Settings unlocked. You can now edit and save company details." });
+    } catch (err: any) {
+      console.error(err);
+      setVerifyError(err.message || "Incorrect password. Permission denied.");
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
 
   const {
     register,
@@ -143,6 +209,7 @@ export default function SettingsPage() {
       if (dbError) throw dbError;
 
       setStatusMsg({ type: "success", text: "Company settings saved successfully!" });
+      setIsEditable(false);
     } catch (err: any) {
       console.error(err);
       setStatusMsg({ type: "error", text: err.message || "Failed to save settings. Please try again." });
@@ -196,8 +263,8 @@ export default function SettingsPage() {
               <div
                 className={`p-4 rounded-xl flex items-start gap-3 border mb-6 ${
                   statusMsg.type === "success"
-                    ? "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-800 dark:text-emerald-400"
-                    : "bg-red-50 border-red-200 text-red-800 dark:bg-red-950/20 dark:border-red-800 dark:text-red-400"
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-800/40 dark:text-emerald-400"
+                    : "bg-red-50 border-red-200 text-red-800 dark:bg-red-950/20 dark:border-red-800/40 dark:text-red-400"
                 }`}
               >
                 <AlertCircle className="mt-0.5 shrink-0" size={18} />
@@ -209,47 +276,85 @@ export default function SettingsPage() {
               {/* Left Column: Form Fields */}
               <div className="lg:col-span-2 space-y-8">
                 {/* Basic Details */}
-                <Card className="border-border/60">
+                <Card isGlass={true} className="border-border/60">
                   <CardHeader>
-                    <CardTitle className="text-lg font-bold">Company Profile</CardTitle>
-                    <CardDescription className="text-xs">
-                      Official registration details used on tax invoices and work orders.
-                    </CardDescription>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div>
+                        <CardTitle className="text-lg font-bold flex items-center gap-2">
+                          <Building className="text-secondary w-5 h-5" /> Company Profile
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                          Official registration details used on tax invoices and work orders.
+                        </CardDescription>
+                      </div>
+                      <div>
+                        {!isEditable ? (
+                          <button
+                            type="button"
+                            onClick={() => { setVerifyError(null); setVerifyPassword(""); setIsVerifyModalOpen(true); }}
+                            className="px-4 py-2 text-xs font-black bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:border-primary/40 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs uppercase tracking-wider"
+                          >
+                            <Lock className="w-3.5 h-3.5" /> Edit Profile
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setIsEditable(false)}
+                            className="px-4 py-2 text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center gap-1.5 cursor-pointer uppercase tracking-wider hover:bg-emerald-500/25 transition-all"
+                          >
+                            <Unlock className="w-3.5 h-3.5 animate-pulse" /> Lock Fields
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">Company Legal Name</label>
-                        <Input required placeholder="B.K. Engineering Works" {...register("name")} className="text-xs" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <Building className="w-3.5 h-3.5 text-secondary" /> Company Legal Name
+                        </label>
+                        <Input required placeholder="B.K. Engineering Works" disabled={!isEditable} {...register("name")} className="text-xs font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">GSTIN (Tax ID)</label>
-                        <Input placeholder="29XXXXX0000X0Z0" {...register("gstin")} className="text-xs font-mono uppercase" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <FileText className="w-3.5 h-3.5 text-secondary" /> GSTIN (Tax ID)
+                        </label>
+                        <Input placeholder="29XXXXX0000X0Z0" disabled={!isEditable} {...register("gstin")} className="text-xs font-mono uppercase font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">PAN Number</label>
-                        <Input placeholder="ABCDE1234F" {...register("pan")} className="text-xs font-mono uppercase" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <CreditCard className="w-3.5 h-3.5 text-secondary" /> PAN Number
+                        </label>
+                        <Input placeholder="ABCDE1234F" disabled={!isEditable} {...register("pan")} className="text-xs font-mono uppercase font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">Invoice ID Prefix</label>
-                        <Input placeholder="BK" {...register("invoicePrefix")} className="text-xs font-mono uppercase" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <Hash className="w-3.5 h-3.5 text-secondary" /> Invoice ID Prefix
+                        </label>
+                        <Input placeholder="BK" disabled={!isEditable} {...register("invoicePrefix")} className="text-xs font-mono uppercase font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase font-bold text-muted-foreground">Registered Address</label>
-                      <Textarea required placeholder="Shop No. 5, Industrial Area, Bangalore" {...register("address")} className="text-xs min-h-[60px]" />
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-secondary" /> Registered Address
+                      </label>
+                      <Textarea required placeholder="Shop No. 5, Industrial Area, Bangalore" disabled={!isEditable} {...register("address")} className="text-xs min-h-[70px] font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">State</label>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-secondary" /> State
+                        </label>
                         <select
+                          disabled={!isEditable}
                           {...register("state")}
-                          className="w-full text-xs p-2.5 rounded-lg bg-background border border-border text-foreground"
+                          className="w-full text-xs p-2.5 rounded-lg bg-background border border-border text-foreground font-semibold focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40"
                         >
                           {INDIAN_STATES.map((st) => (
                             <option key={st} value={st}>
@@ -258,52 +363,68 @@ export default function SettingsPage() {
                           ))}
                         </select>
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">Email Contact</label>
-                        <Input placeholder="contact@bkengineering.com" {...register("email")} className="text-xs" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5 text-secondary" /> Email Contact
+                        </label>
+                        <Input placeholder="contact@bkengineering.com" disabled={!isEditable} {...register("email")} className="text-xs font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">Phone Number</label>
-                        <Input placeholder="+91 9876543210" {...register("phone")} className="text-xs" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-secondary" /> Phone Number
+                        </label>
+                        <Input placeholder="+91 9876543210" disabled={!isEditable} {...register("phone")} className="text-xs font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Banking & Terms */}
-                <Card className="border-border/60">
+                <Card isGlass={true} className="border-border/60">
                   <CardHeader>
-                    <CardTitle className="text-lg font-bold">Banking & Legal Defaults</CardTitle>
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <Landmark className="text-secondary w-5 h-5" /> Banking & Legal Defaults
+                    </CardTitle>
                     <CardDescription className="text-xs">
                       Default bank accounts added to invoice footers and legal disclaimer clauses.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">Beneficiary Bank Name</label>
-                        <Input placeholder="State Bank of India" {...register("bankName")} className="text-xs" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <Landmark className="w-3.5 h-3.5 text-secondary" /> Beneficiary Bank Name
+                        </label>
+                        <Input placeholder="State Bank of India" disabled={!isEditable} {...register("bankName")} className="text-xs font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">Bank Account Number</label>
-                        <Input placeholder="300012345678" {...register("bankAccount")} className="text-xs font-mono" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <Wallet className="w-3.5 h-3.5 text-secondary" /> Bank Account Number
+                        </label>
+                        <Input placeholder="300012345678" disabled={!isEditable} {...register("bankAccount")} className="text-xs font-mono font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">Bank IFSC Code</label>
-                        <Input placeholder="SBIN0000123" {...register("ifsc")} className="text-xs font-mono uppercase" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <Code className="w-3.5 h-3.5 text-secondary" /> Bank IFSC Code
+                        </label>
+                        <Input placeholder="SBIN0000123" disabled={!isEditable} {...register("ifsc")} className="text-xs font-mono uppercase font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-muted-foreground">UPI QR ID (optional)</label>
-                        <Input placeholder="bkengineering@sbi" {...register("upiId")} className="text-xs font-mono" />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                          <QrCode className="w-3.5 h-3.5 text-secondary" /> UPI QR ID (optional)
+                        </label>
+                        <Input placeholder="bkengineering@sbi" disabled={!isEditable} {...register("upiId")} className="text-xs font-mono font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase font-bold text-muted-foreground">Invoice Disclaimer / T&C Clauses</label>
-                      <Textarea placeholder="1. Interest @18% will be charged if payment is not received within 15 days..." {...register("termsDefault")} className="text-xs min-h-[80px]" />
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1.5">
+                        <Scale className="w-3.5 h-3.5 text-secondary" /> Invoice Disclaimer / T&C Clauses
+                      </label>
+                      <Textarea placeholder="1. Interest @18% will be charged if payment is not received within 15 days..." disabled={!isEditable} {...register("termsDefault")} className="text-xs min-h-[80px] font-semibold focus:border-secondary focus:ring-secondary/20 transition-all duration-300 disabled:opacity-85 disabled:bg-muted/40" />
                     </div>
                   </CardContent>
                 </Card>
@@ -312,9 +433,11 @@ export default function SettingsPage() {
               {/* Right Column: Assets & Backups */}
               <div className="space-y-8">
                 {/* Branding Assets */}
-                <Card className="border-border/60">
+                <Card isGlass={true} className="border-border/60">
                   <CardHeader>
-                    <CardTitle className="text-lg font-bold">Branding Signatures</CardTitle>
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <Sparkles className="text-secondary w-5 h-5" /> Branding Signatures
+                    </CardTitle>
                     <CardDescription className="text-xs">
                       Official graphic assets rendered in PDF tax slips.
                     </CardDescription>
@@ -323,29 +446,45 @@ export default function SettingsPage() {
                     {/* Logo Upload */}
                     <div className="space-y-2">
                       <span className="text-xs font-bold text-foreground">Company Logo</span>
-                      <div className="border-2 border-dashed border-border/80 rounded-xl p-4 relative group flex flex-col items-center justify-center min-h-[120px] hover:border-secondary transition-all">
+                      <div className={`border-2 border-dashed border-border/80 dark:border-slate-800 rounded-2xl p-4 relative group flex flex-col items-center justify-center min-h-[140px] transition-all shadow-xs duration-300 ${isEditable ? 'hover:border-secondary/80 hover:bg-slate-50/20 dark:hover:bg-slate-900/30 cursor-pointer' : 'opacity-85'}`}>
                         {logoPreview ? (
-                          <div className="text-center">
-                            <img src={logoPreview} alt="Logo" className="max-h-16 object-contain mx-auto mb-2" />
-                            <button
-                              type="button"
-                              onClick={() => { setLogoPreview(null); setValue("logoUrl", ""); }}
-                              className="text-[10px] font-bold text-red-500 hover:text-red-700 cursor-pointer"
-                            >
-                              Remove Logo
-                            </button>
+                          <div className="text-center space-y-2">
+                            <div className="relative inline-block rounded-lg overflow-hidden border border-border p-1.5 bg-white shadow-xs">
+                              <img src={logoPreview} alt="Logo" className="max-h-16 object-contain" />
+                            </div>
+                            {isEditable && (
+                              <div>
+                                <button
+                                  type="button"
+                                  onClick={() => { setLogoPreview(null); setValue("logoUrl", ""); }}
+                                  className="px-3 py-1 text-[10px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 rounded-full transition-all cursor-pointer border border-red-200 dark:border-red-800/40 flex items-center gap-1 mx-auto"
+                                >
+                                  <Trash2 size={10} /> Remove Logo
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center text-center cursor-pointer">
-                            <Upload className="text-muted-foreground group-hover:text-secondary transition-colors mb-2" size={24} />
-                            <span className="text-xs text-muted-foreground">Click to upload Logo</span>
+                          <div className="flex flex-col items-center text-center">
+                            {isEditable ? (
+                              <>
+                                <Upload className="text-muted-foreground group-hover:text-secondary transition-colors mb-2" size={24} />
+                                <span className="text-xs text-muted-foreground font-semibold">Click to upload Logo</span>
+                              </>
+                            ) : (
+                              <>
+                                <Lock className="text-muted-foreground mb-2" size={24} />
+                                <span className="text-xs text-muted-foreground font-semibold">Upload Locked</span>
+                              </>
+                            )}
                           </div>
                         )}
                         <input
                           type="file"
                           accept="image/*"
+                          disabled={!isEditable}
                           onChange={(e) => handleFileChange(e, "logoUrl")}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -353,29 +492,45 @@ export default function SettingsPage() {
                     {/* Signature Upload */}
                     <div className="space-y-2">
                       <span className="text-xs font-bold text-foreground">Authorized Signature</span>
-                      <div className="border-2 border-dashed border-border/80 rounded-xl p-4 relative group flex flex-col items-center justify-center min-h-[120px] hover:border-secondary transition-all">
+                      <div className={`border-2 border-dashed border-border/80 dark:border-slate-800 rounded-2xl p-4 relative group flex flex-col items-center justify-center min-h-[140px] transition-all shadow-xs duration-300 ${isEditable ? 'hover:border-secondary/80 hover:bg-slate-50/20 dark:hover:bg-slate-900/30 cursor-pointer' : 'opacity-85'}`}>
                         {signaturePreview ? (
-                          <div className="text-center">
-                            <img src={signaturePreview} alt="Signature" className="max-h-12 object-contain mx-auto mb-2" />
-                            <button
-                              type="button"
-                              onClick={() => { setSignaturePreview(null); setValue("signatureUrl", ""); }}
-                              className="text-[10px] font-bold text-red-500 hover:text-red-700 cursor-pointer"
-                            >
-                              Remove Signature
-                            </button>
+                          <div className="text-center space-y-2">
+                            <div className="relative inline-block rounded-lg overflow-hidden border border-border p-1.5 bg-white shadow-xs">
+                              <img src={signaturePreview} alt="Signature" className="max-h-12 object-contain" />
+                            </div>
+                            {isEditable && (
+                              <div>
+                                <button
+                                  type="button"
+                                  onClick={() => { setSignaturePreview(null); setValue("signatureUrl", ""); }}
+                                  className="px-3 py-1 text-[10px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 rounded-full transition-all cursor-pointer border border-red-200 dark:border-red-800/40 flex items-center gap-1 mx-auto"
+                                >
+                                  <Trash2 size={10} /> Remove Signature
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center text-center cursor-pointer">
-                            <Upload className="text-muted-foreground group-hover:text-secondary transition-colors mb-2" size={24} />
-                            <span className="text-xs text-muted-foreground">Click to upload Signature</span>
+                          <div className="flex flex-col items-center text-center">
+                            {isEditable ? (
+                              <>
+                                <Upload className="text-muted-foreground group-hover:text-secondary transition-colors mb-2" size={24} />
+                                <span className="text-xs text-muted-foreground font-semibold">Click to upload Signature</span>
+                              </>
+                            ) : (
+                              <>
+                                <Lock className="text-muted-foreground mb-2" size={24} />
+                                <span className="text-xs text-muted-foreground font-semibold">Upload Locked</span>
+                              </>
+                            )}
                           </div>
                         )}
                         <input
                           type="file"
                           accept="image/*"
+                          disabled={!isEditable}
                           onChange={(e) => handleFileChange(e, "signatureUrl")}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -383,29 +538,45 @@ export default function SettingsPage() {
                     {/* Seal Upload */}
                     <div className="space-y-2">
                       <span className="text-xs font-bold text-foreground">Official Seal</span>
-                      <div className="border-2 border-dashed border-border/80 rounded-xl p-4 relative group flex flex-col items-center justify-center min-h-[120px] hover:border-secondary transition-all">
+                      <div className={`border-2 border-dashed border-border/80 dark:border-slate-800 rounded-2xl p-4 relative group flex flex-col items-center justify-center min-h-[140px] transition-all shadow-xs duration-300 ${isEditable ? 'hover:border-secondary/80 hover:bg-slate-50/20 dark:hover:bg-slate-900/30 cursor-pointer' : 'opacity-85'}`}>
                         {sealPreview ? (
-                          <div className="text-center">
-                            <img src={sealPreview} alt="Seal" className="max-h-16 object-contain mx-auto mb-2" />
-                            <button
-                              type="button"
-                              onClick={() => { setSealPreview(null); setValue("sealUrl", ""); }}
-                              className="text-[10px] font-bold text-red-500 hover:text-red-700 cursor-pointer"
-                            >
-                              Remove Seal
-                            </button>
+                          <div className="text-center space-y-2">
+                            <div className="relative inline-block rounded-lg overflow-hidden border border-border p-1.5 bg-white shadow-xs">
+                              <img src={sealPreview} alt="Seal" className="max-h-16 object-contain" />
+                            </div>
+                            {isEditable && (
+                              <div>
+                                <button
+                                  type="button"
+                                  onClick={() => { setSealPreview(null); setValue("sealUrl", ""); }}
+                                  className="px-3 py-1 text-[10px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 rounded-full transition-all cursor-pointer border border-red-200 dark:border-red-800/40 flex items-center gap-1 mx-auto"
+                                >
+                                  <Trash2 size={10} /> Remove Seal
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center text-center cursor-pointer">
-                            <Upload className="text-muted-foreground group-hover:text-secondary transition-colors mb-2" size={24} />
-                            <span className="text-xs text-muted-foreground">Click to upload Seal</span>
+                          <div className="flex flex-col items-center text-center">
+                            {isEditable ? (
+                              <>
+                                <Upload className="text-muted-foreground group-hover:text-secondary transition-colors mb-2" size={24} />
+                                <span className="text-xs text-muted-foreground font-semibold">Click to upload Seal</span>
+                              </>
+                            ) : (
+                              <>
+                                <Lock className="text-muted-foreground mb-2" size={24} />
+                                <span className="text-xs text-muted-foreground font-semibold">Upload Locked</span>
+                              </>
+                            )}
                           </div>
                         )}
                         <input
                           type="file"
                           accept="image/*"
+                          disabled={!isEditable}
                           onChange={(e) => handleFileChange(e, "sealUrl")}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -413,9 +584,11 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* Database Backup & Restore Card */}
-                <Card className="border-border/60">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-bold">Database Backup & Restore</CardTitle>
+                <Card isGlass={true} className="border-border/60">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-bold flex items-center gap-2">
+                      <Settings className="text-secondary w-4 h-4" /> Database Backup & Restore
+                    </CardTitle>
                     <CardDescription className="text-xs">
                       Export full ERP database records or restore them from a JSON backup.
                     </CardDescription>
@@ -487,46 +660,137 @@ export default function SettingsPage() {
 
                 {/* Action Buttons Panel */}
                 <div className="flex flex-col gap-3">
-                  <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
-                    Save Settings
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={async () => {
-                      if (confirm("Are you sure you want to revert changes?")) {
-                        setIsLoading(true);
-                        try {
-                          const { data } = await supabase
-                            .from("Company")
-                            .select("*")
-                            .limit(1)
-                            .single();
-                          if (data) {
-                            reset(data);
-                            setLogoPreview(data.logoUrl || null);
-                            setSignaturePreview(data.signatureUrl || null);
-                            setSealPreview(data.sealUrl || null);
-                          } else {
-                            reset({});
-                            setLogoPreview(null);
-                            setSignaturePreview(null);
-                            setSealPreview(null);
+                  {isEditable ? (
+                    <>
+                      <Button type="submit" variant="primary" className="w-full cursor-pointer hover:scale-[1.01] transition-transform duration-200 font-bold" isLoading={isLoading}>
+                        Save Settings
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="w-full cursor-pointer hover:scale-[1.01] transition-transform duration-200 font-bold"
+                        onClick={async () => {
+                          if (confirm("Are you sure you want to revert changes?")) {
+                            setIsLoading(true);
+                            try {
+                              const { data } = await supabase
+                                .from("Company")
+                                .select("*")
+                                .limit(1)
+                                .single();
+                              if (data) {
+                                reset(data);
+                                setLogoPreview(data.logoUrl || null);
+                                setSignaturePreview(data.signatureUrl || null);
+                                setSealPreview(data.sealUrl || null);
+                              } else {
+                                reset({});
+                                setLogoPreview(null);
+                                setSignaturePreview(null);
+                                setSealPreview(null);
+                              }
+                              setIsEditable(false);
+                            } catch (err) {
+                              console.error(err);
+                            } finally {
+                              setIsLoading(false);
+                            }
                           }
-                        } catch (err) {
-                          console.error(err);
-                        } finally {
-                          setIsLoading(false);
-                        }
-                      }
-                    }}
-                  >
-                    Reset Form
-                  </Button>
+                        }}
+                      >
+                        Reset Form
+                      </Button>
+                    </>
+                  ) : (
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="w-full cursor-pointer hover:scale-[1.01] transition-all duration-200 font-bold flex items-center justify-center gap-2 border-secondary/20 hover:bg-secondary/10 text-secondary"
+                      onClick={() => { setVerifyError(null); setVerifyPassword(""); setIsVerifyModalOpen(true); }}
+                    >
+                      <Lock size={14} /> Unlock Profile to Edit
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
+
+            {/* ADMIN PASSWORD VERIFICATION MODAL */}
+            {isVerifyModalOpen && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-card w-full max-w-md rounded-2xl border border-border shadow-2xl overflow-hidden animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between p-6 border-b border-border bg-slate-50/50 dark:bg-slate-900/20">
+                    <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                      <Lock size={18} className="text-secondary" />
+                      Admin Verification Required
+                    </h3>
+                    <button 
+                      type="button"
+                      onClick={() => setIsVerifyModalOpen(false)} 
+                      className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <p className="text-xs text-muted-foreground">
+                      To modify company settings or branding assets, please verify your administrator account password.
+                    </p>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground">Admin Account</label>
+                      <div className="text-xs font-mono font-bold bg-muted px-3 py-2 rounded-lg text-foreground border border-border">
+                        {currentUserEmail}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground">Verify Password</label>
+                      <Input
+                        type="password"
+                        required
+                        placeholder="Enter password..."
+                        value={verifyPassword}
+                        onChange={(e) => setVerifyPassword(e.target.value)}
+                        className="text-xs font-semibold focus:border-secondary focus:ring-secondary/20"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleVerifyAdmin(e as any);
+                          }
+                        }}
+                        autoFocus
+                      />
+                    </div>
+
+                    {verifyError && (
+                      <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-danger text-xs font-semibold flex items-center gap-1.5">
+                        <AlertCircle size={14} />
+                        <span>{verifyError}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6 border-t border-border bg-slate-50/50 dark:bg-slate-900/20 flex justify-end gap-3">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setIsVerifyModalOpen(false)} 
+                      className="cursor-pointer"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={(e) => handleVerifyAdmin(e as any)}
+                      className="cursor-pointer font-bold" 
+                      isLoading={verifyLoading}
+                    >
+                      Verify & Unlock
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </form>
         )}
 
