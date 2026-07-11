@@ -77,7 +77,7 @@ export async function hasSiteAccess(
   role: "ADMIN" | "SITE_MANAGER",
   contractId: string,
   siteId: string | null,
-  permission: "attendance" | "measurement" | "materialRequest" | "viewProgress"
+  permission: "attendance" | "measurement" | "materialRequest" | "viewProgress" | "laborDeployment" | "workerManagement" | "expenseRecording" | "documentUpload"
 ): Promise<boolean> {
   if (role === "ADMIN") return true;
 

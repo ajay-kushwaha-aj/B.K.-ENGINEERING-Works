@@ -813,6 +813,11 @@ function UserAccessManager() {
   const [isSaving, setIsSaving] = React.useState(false);
   const [statusMsg, setStatusMsg] = React.useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Loading triggers for individual actions
+  const [loadingUserId, setLoadingUserId] = React.useState<string | null>(null);
+  const [resendingEmail, setResendingEmail] = React.useState<string | null>(null);
+  const [revokingAccessId, setRevokingAccessId] = React.useState<string | null>(null);
+
   // Invite user state
   const [newUser, setNewUser] = React.useState({
     email: "",
@@ -821,7 +826,7 @@ function UserAccessManager() {
     role: "SITE_MANAGER"
   });
 
-  // Access assignment state
+  // Access assignment state with extended permissions list
   const [newAccess, setNewAccess] = React.useState({
     contractId: "",
     siteId: "", // empty means All Sites
@@ -829,15 +834,31 @@ function UserAccessManager() {
       attendance: true,
       measurement: true,
       materialRequest: true,
+      laborDeployment: true,
+      workerManagement: true,
+      expenseRecording: true,
+      documentUpload: true,
       viewProgress: true
     }
   });
+
+  const PERMISSION_LABELS: Record<string, string> = {
+    attendance: "Daily Attendance",
+    measurement: "Measurement Sheets",
+    materialRequest: "Material Requests",
+    laborDeployment: "Labor Deployment Logs",
+    workerManagement: "Worker Directory Access",
+    expenseRecording: "Log Site Expenses",
+    documentUpload: "Upload Drawings/Docs",
+    viewProgress: "View Progress Reports",
+  };
 
   const sessionStr = typeof window !== "undefined" ? localStorage.getItem("bk_session") : null;
   const token = sessionStr ? JSON.parse(sessionStr).token : "";
 
   const handleResendInvite = async (email: string) => {
     setStatusMsg(null);
+    setResendingEmail(email);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/login/reset-password`,
@@ -848,6 +869,8 @@ function UserAccessManager() {
     } catch (err: any) {
       console.error(err);
       setStatusMsg({ type: "error", text: `Failed to send setup link: ${err.message}` });
+    } finally {
+      setResendingEmail(null);
     }
   };
 
@@ -929,6 +952,8 @@ function UserAccessManager() {
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
+    setLoadingUserId(id);
+    setStatusMsg(null);
     try {
       const nextStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
       const res = await fetch(`/api/users/${id}`, {
@@ -940,13 +965,17 @@ function UserAccessManager() {
         body: JSON.stringify({ status: nextStatus })
       });
       if (res.ok) {
+        setStatusMsg({ type: "success", text: `User status changed to ${nextStatus} successfully.` });
         loadData();
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to toggle status");
+        setStatusMsg({ type: "error", text: err.error || "Failed to toggle status" });
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setStatusMsg({ type: "error", text: e.message || "Failed to toggle user status." });
+    } finally {
+      setLoadingUserId(null);
     }
   };
 
@@ -971,7 +1000,16 @@ function UserAccessManager() {
         setNewAccess(p => ({
           ...p,
           siteId: "",
-          permissions: { attendance: true, measurement: true, materialRequest: true, viewProgress: true }
+          permissions: {
+            attendance: true,
+            measurement: true,
+            materialRequest: true,
+            laborDeployment: true,
+            workerManagement: true,
+            expenseRecording: true,
+            documentUpload: true,
+            viewProgress: true
+          }
         }));
         loadData();
       } else {
@@ -988,6 +1026,7 @@ function UserAccessManager() {
   const handleRevokeAccess = async (accessId: string) => {
     if (!selectedUserId) return;
     if (!confirm("Are you sure you want to revoke this site access?")) return;
+    setRevokingAccessId(accessId);
     try {
       const res = await fetch(`/api/users/${selectedUserId}/access?accessId=${accessId}`, {
         method: "DELETE",
@@ -1001,6 +1040,8 @@ function UserAccessManager() {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setRevokingAccessId(null);
     }
   };
 
@@ -1135,36 +1176,49 @@ function UserAccessManager() {
                         {userItem.phone && <p className="text-[10px] text-muted-foreground font-mono">{userItem.phone}</p>}
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                         {userItem.role !== "ADMIN" && (
                           <Button
                             size="sm"
                             variant="outline"
                             className="text-xs font-semibold cursor-pointer gap-1.5"
                             onClick={() => setSelectedUserId(selectedUserId === userItem.id ? "" : userItem.id)}
+                            disabled={loadingUserId !== null || resendingEmail !== null}
                           >
                             <Settings size={12} />
-                            Site Permissions ({userItem.siteAccess?.length || 0})
+                            Permissions ({userItem.siteAccess?.length || 0})
                           </Button>
                         )}
                         <Button
                           size="sm"
                           type="button"
                           variant="outline"
-                          className="text-xs font-semibold cursor-pointer gap-1.5 border-amber-200 hover:bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:hover:bg-amber-950/20 dark:text-amber-400"
+                          className="text-xs font-semibold cursor-pointer gap-1.5 border-amber-200 hover:bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:hover:bg-amber-950/20 dark:text-amber-400 min-w-[110px] justify-center"
                           onClick={() => handleResendInvite(userItem.email)}
+                          disabled={resendingEmail !== null || loadingUserId !== null}
                         >
-                          <Mail size={12} />
-                          Resend Link
+                          {resendingEmail === userItem.email ? (
+                            <Loader2 size={12} className="animate-spin text-amber-600" />
+                          ) : (
+                            <Mail size={12} />
+                          )}
+                          {resendingEmail === userItem.email ? "Sending..." : "Resend Link"}
                         </Button>
                         <Button
                           size="sm"
                           variant={isUserActive ? "danger" : "outline"}
-                          className="text-xs font-semibold cursor-pointer gap-1.5"
+                          className="text-xs font-semibold cursor-pointer gap-1.5 min-w-[100px] justify-center"
                           onClick={() => handleToggleStatus(userItem.id, userItem.status)}
+                          disabled={loadingUserId !== null || resendingEmail !== null}
                         >
-                          {isUserActive ? <Lock size={12} /> : <Unlock size={12} />}
-                          {isUserActive ? "Deactivate" : "Activate"}
+                          {loadingUserId === userItem.id ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : isUserActive ? (
+                            <Lock size={12} />
+                          ) : (
+                            <Unlock size={12} />
+                          )}
+                          {loadingUserId === userItem.id ? "Processing" : (isUserActive ? "Deactivate" : "Activate")}
                         </Button>
                       </div>
                     </div>
@@ -1175,7 +1229,7 @@ function UserAccessManager() {
 
             {/* Selected User Perm Controls */}
             {selectedUserId && activeUser && (
-              <Card className="border-border border-2 shadow-md">
+              <Card className="border-border border-2 shadow-md animate-in fade-in duration-200">
                 <CardHeader className="bg-slate-50 dark:bg-slate-900/50">
                   <CardTitle className="text-base font-bold flex items-center gap-2">
                     <ShieldCheck className="text-emerald-600" size={18} /> Configure Site Access: {activeUser.name}
@@ -1220,11 +1274,11 @@ function UserAccessManager() {
                     {/* Permissions list checkboxes */}
                     <div className="space-y-2">
                       <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Explicit Privileges</span>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-card p-3 rounded-xl border border-border">
                         {Object.keys(newAccess.permissions).map((permKey) => {
                           const val = (newAccess.permissions as any)[permKey];
                           return (
-                            <label key={permKey} className="flex items-center gap-2 bg-background p-2 border border-border rounded-lg cursor-pointer">
+                            <label key={permKey} className="flex items-center gap-2 bg-background p-2.5 border border-border/80 hover:border-secondary/40 rounded-lg cursor-pointer transition-colors">
                               <input
                                 type="checkbox"
                                 checked={val}
@@ -1232,9 +1286,9 @@ function UserAccessManager() {
                                   ...p,
                                   permissions: { ...p.permissions, [permKey]: e.target.checked }
                                 }))}
-                                className="w-3.5 h-3.5"
+                                className="w-3.5 h-3.5 text-secondary accent-amber-500 rounded focus:ring-secondary/20"
                               />
-                              <span className="text-[10px] font-bold uppercase text-foreground">{permKey.replace(/([A-Z])/g, " $1")}</span>
+                              <span className="text-xs font-semibold text-foreground">{PERMISSION_LABELS[permKey] || permKey}</span>
                             </label>
                           );
                         })}
@@ -1259,13 +1313,13 @@ function UserAccessManager() {
                                 <p className="font-bold text-foreground">
                                   {accessItem.contract?.name || `Contract ID: ${accessItem.contractId}`}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground">
-                                  Site: <span className="font-semibold">{accessItem.site?.name || "ALL SITES UNDER CONTRACT"}</span>
+                                <p className="text-[10px] text-muted-foreground font-medium">
+                                  Site: <span className="font-bold text-foreground">{accessItem.site?.name || "ALL SITES UNDER CONTRACT"}</span>
                                 </p>
-                                <div className="flex gap-1.5 flex-wrap pt-1">
+                                <div className="flex gap-1.5 flex-wrap pt-2">
                                   {Object.entries(perms).map(([k, v]) => v ? (
-                                    <span key={k} className="text-[8px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-extrabold uppercase px-1.5 py-0.5 rounded">
-                                      {k}
+                                    <span key={k} className="text-[8px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-extrabold uppercase px-1.5 py-0.5 rounded tracking-wider">
+                                      {PERMISSION_LABELS[k] || k.replace(/([A-Z])/g, " $1")}
                                     </span>
                                   ) : null)}
                                 </div>
@@ -1273,10 +1327,16 @@ function UserAccessManager() {
                               <Button
                                 size="sm"
                                 variant="danger"
-                                className="text-xs gap-1 cursor-pointer"
+                                className="text-xs gap-1 cursor-pointer min-w-[80px] justify-center"
                                 onClick={() => handleRevokeAccess(accessItem.id)}
+                                disabled={revokingAccessId !== null}
                               >
-                                <Trash2 size={12} /> Revoke
+                                {revokingAccessId === accessItem.id ? (
+                                  <Loader2 size={12} className="animate-spin" />
+                                ) : (
+                                  <Trash2 size={12} />
+                                )}
+                                {revokingAccessId === accessItem.id ? "Revoking" : "Revoke"}
                               </Button>
                             </div>
                           );
