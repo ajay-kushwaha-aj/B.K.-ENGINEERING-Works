@@ -23,6 +23,25 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  React.useEffect(() => {
+    // Listen for auth events to redirect to reset password
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("[Auth State Change] Event:", event);
+      if (event === "PASSWORD_RECOVERY" || window.location.hash.includes("type=recovery") || window.location.hash.includes("type=invite")) {
+        router.push("/login/reset-password");
+      }
+    });
+
+    // Check hash on mount directly in case event doesn't fire
+    if (window.location.hash.includes("type=recovery") || window.location.hash.includes("type=invite") || window.location.hash.includes("access_token=")) {
+      router.push("/login/reset-password");
+    }
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
+
   // Forgot password flow states
   const [view, setView] = React.useState<"login" | "forgot" | "success">("login");
   const [forgotEmail, setForgotEmail] = React.useState("");

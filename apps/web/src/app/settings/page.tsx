@@ -836,6 +836,21 @@ function UserAccessManager() {
   const sessionStr = typeof window !== "undefined" ? localStorage.getItem("bk_session") : null;
   const token = sessionStr ? JSON.parse(sessionStr).token : "";
 
+  const handleResendInvite = async (email: string) => {
+    setStatusMsg(null);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/login/reset-password`,
+      });
+
+      if (error) throw error;
+      setStatusMsg({ type: "success", text: `Password setup link successfully sent to ${email}!` });
+    } catch (err: any) {
+      console.error(err);
+      setStatusMsg({ type: "error", text: `Failed to send setup link: ${err.message}` });
+    }
+  };
+
   const loadData = React.useCallback(async () => {
     setIsLoading(true);
     setStatusMsg(null);
@@ -1132,6 +1147,16 @@ function UserAccessManager() {
                             Site Permissions ({userItem.siteAccess?.length || 0})
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          type="button"
+                          variant="outline"
+                          className="text-xs font-semibold cursor-pointer gap-1.5 border-amber-200 hover:bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:hover:bg-amber-950/20 dark:text-amber-400"
+                          onClick={() => handleResendInvite(userItem.email)}
+                        >
+                          <Mail size={12} />
+                          Resend Link
+                        </Button>
                         <Button
                           size="sm"
                           variant={isUserActive ? "danger" : "outline"}
