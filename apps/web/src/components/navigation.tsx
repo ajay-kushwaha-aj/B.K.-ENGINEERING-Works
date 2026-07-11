@@ -169,37 +169,23 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
         </button>
       </header>
 
-      {/* Mobile Drawer Overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className="md:hidden fixed inset-0 bg-black/60 z-30 transition-opacity duration-300"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Navigation Drawer */}
-      <aside
-        className={`md:hidden fixed top-0 bottom-0 left-0 w-64 bg-slate-900 border-r border-slate-800 text-white z-40 transform transition-transform duration-300 ease-in-out print:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      {/* Mobile Dropdown Menu (Slides Up/Down) */}
+      <div
+        className={`md:hidden absolute top-[57px] left-0 right-0 bg-slate-900 border-b border-slate-800 text-white z-20 transition-all duration-300 ease-in-out overflow-hidden print:hidden shadow-lg ${
+          isMobileMenuOpen ? "max-h-[85vh] opacity-100 py-4 border-b" : "max-h-0 opacity-0 py-0 border-b-0"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-slate-800">
-          <Logo size={56} showText={true} />
-          <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white">
-            <X size={20} />
-          </button>
-        </div>
-        <nav className="flex-1 px-2 py-4 space-y-1">
+        <nav className="px-4 space-y-1 max-h-[60vh] overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
               <div key={item.name}>
                 {item.disabled ? (
-                  <span className="flex items-center px-4 py-3 text-sm font-medium rounded-lg text-slate-500 cursor-not-allowed gap-3">
-                    <Icon size={18} />
+                  <span className="flex items-center px-4 py-2.5 text-xs font-medium rounded-lg text-slate-500 cursor-not-allowed gap-3">
+                    <Icon size={16} />
                     <span>{item.name}</span>
-                    <span className="ml-auto text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">
+                    <span className="ml-auto text-[8px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">
                       v1
                     </span>
                   </span>
@@ -207,13 +193,13 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
                   <Link
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all gap-3 ${
+                    className={`flex items-center px-4 py-2.5 text-xs font-medium rounded-lg transition-all gap-3 ${
                       isActive
                         ? "bg-secondary text-slate-900 font-bold"
                         : "text-slate-300 hover:bg-slate-800 hover:text-white"
                     }`}
                   >
-                    <Icon size={18} />
+                    <Icon size={16} />
                     <span>{item.name}</span>
                   </Link>
                 )}
@@ -221,29 +207,29 @@ export const Navigation: React.FC<NavigationProps> = ({ children }) => {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-slate-800 flex items-center justify-between">
+        <div className="mx-4 mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
           <div className="truncate pr-2">
-            <p className="text-xs text-slate-400">Signed in as</p>
+            <p className="text-[10px] text-slate-400">Signed in as</p>
             <p className="text-xs font-semibold text-slate-200 truncate">{userEmail}</p>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={toggleTheme}
               className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
               title="Toggle Theme"
             >
-              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+              {theme === "light" ? <Moon size={14} /> : <Sun size={14} />}
             </button>
             <button
               onClick={handleLogout}
               className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
               title="Log Out"
             >
-              <LogOut size={16} />
+              <LogOut size={14} />
             </button>
           </div>
         </div>
-      </aside>
+      </div>
 
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex md:flex-col md:w-64 bg-slate-900 border-r border-slate-800 text-white flex-shrink-0 print:hidden">
