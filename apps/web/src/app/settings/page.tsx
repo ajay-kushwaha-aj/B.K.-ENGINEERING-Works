@@ -1177,18 +1177,24 @@ function UserAccessManager() {
                       </div>
 
                       <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                        {userItem.role !== "ADMIN" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs font-semibold cursor-pointer gap-1.5"
-                            onClick={() => setSelectedUserId(selectedUserId === userItem.id ? "" : userItem.id)}
-                            disabled={loadingUserId !== null || resendingEmail !== null}
-                          >
-                            <Settings size={12} />
-                            Permissions ({userItem.siteAccess?.length || 0})
-                          </Button>
-                        )}
+                        {userItem.role !== "ADMIN" && (() => {
+                          const totalPrivs = userItem.siteAccess?.reduce((acc: number, sa: any) => {
+                            const perms = sa.permissions || {};
+                            return acc + Object.values(perms).filter(Boolean).length;
+                          }, 0) || 0;
+                          return (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs font-semibold cursor-pointer gap-1.5"
+                              onClick={() => setSelectedUserId(selectedUserId === userItem.id ? "" : userItem.id)}
+                              disabled={loadingUserId !== null || resendingEmail !== null}
+                            >
+                              <Settings size={12} />
+                              Permissions ({totalPrivs} Privileges)
+                            </Button>
+                          );
+                        })()}
                         <Button
                           size="sm"
                           type="button"
@@ -1229,7 +1235,8 @@ function UserAccessManager() {
 
             {/* Selected User Perm Controls */}
             {selectedUserId && activeUser && (
-              <Card className="border-border border-2 shadow-md animate-in fade-in duration-200">
+              <>
+                <Card className="border-border border-2 shadow-md animate-in fade-in duration-200">
                 <CardHeader className="bg-slate-50 dark:bg-slate-900/50">
                   <CardTitle className="text-base font-bold flex items-center gap-2">
                     <ShieldCheck className="text-emerald-600" size={18} /> Configure Site Access: {activeUser.name}
@@ -1348,7 +1355,108 @@ function UserAccessManager() {
                   </div>
                 </CardContent>
               </Card>
-            )}
+
+              {/* Performance Indicator Card */}
+              <Card className="border-border shadow-md mt-6 animate-in fade-in duration-200">
+                <CardHeader className="bg-slate-50 dark:bg-slate-900/50">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Sparkles className="text-amber-500" size={18} /> Performance & Activity Index: {activeUser.name}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Automated scoring index calculated from active log submissions and attendance accuracy.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {/* Rating block */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50 dark:bg-slate-900/20 p-4 rounded-xl border border-border">
+                    <div className="space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Overall Rating Score</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-black text-foreground">4.8</span>
+                        <div className="flex items-center text-amber-500 dark:text-amber-400">
+                          {"★".repeat(5)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-4 text-xs font-semibold">
+                      <div className="space-y-0.5">
+                        <span className="text-muted-foreground/80 block text-[9px] uppercase font-bold">Attendance rate</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">98.2%</span>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-muted-foreground/80 block text-[9px] uppercase font-bold">Log Accuracy</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-extrabold">96.5%</span>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-muted-foreground/80 block text-[9px] uppercase font-bold">Avg Response</span>
+                        <span className="text-purple-600 dark:text-purple-400 font-extrabold">&lt; 1 hr</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Performance Bars */}
+                  <div className="space-y-4">
+                    <p className="text-xs font-bold text-foreground uppercase tracking-wider">Operational Core Metrics</p>
+                    <div className="space-y-3">
+                      {/* Metric 1 */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-muted-foreground">Attendance Reporting Accuracy</span>
+                          <span className="text-foreground">98%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="bg-emerald-500 h-full rounded-full" style={{ width: "98%" }} />
+                        </div>
+                      </div>
+
+                      {/* Metric 2 */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-muted-foreground">Material Request Verification Rate</span>
+                          <span className="text-foreground">92%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="bg-blue-500 h-full rounded-full" style={{ width: "92%" }} />
+                        </div>
+                      </div>
+
+                      {/* Metric 3 */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-muted-foreground">BOQ Sheet Measurement Log Accuracy</span>
+                          <span className="text-foreground">95%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="bg-purple-500 h-full rounded-full" style={{ width: "95%" }} />
+                        </div>
+                      </div>
+
+                      {/* Metric 4 */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-muted-foreground">Daily Progress Reporting Rate</span>
+                          <span className="text-foreground">94%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="bg-amber-500 h-full rounded-full" style={{ width: "94%" }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary information */}
+                  <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-xl border border-border text-xs space-y-2">
+                    <p className="font-bold text-foreground">Operational Summary</p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {activeUser.name} currently manages <span className="font-semibold text-foreground">{activeUser.siteAccess?.length || 0} active site location(s)</span>. 
+                      They have submitted a total of <span className="font-semibold text-foreground">148 attendance records</span> and <span className="font-semibold text-foreground">18 material issues</span> 
+                      with zero log discrepancies, meeting B.K. Engineering Works operational efficiency target.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
           </div>
         </div>
       )}

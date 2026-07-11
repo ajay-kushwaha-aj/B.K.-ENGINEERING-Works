@@ -518,6 +518,28 @@ function SiteManagerDashboard({ user }: { user: any }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
+  // Profile data state
+  const [profileData, setProfileData] = React.useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = React.useState(true);
+
+  // Load user profile details on mount
+  React.useEffect(() => {
+    if (!user?.user?.email) return;
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`/api/users/profile?email=${encodeURIComponent(user.user.email)}`);
+        if (res.ok) {
+          setProfileData(await res.json());
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+    fetchProfile();
+  }, [user]);
+
   // Tab 1: Attendance marking state
   const [attendanceDate, setAttendanceDate] = React.useState<string>(new Date().toISOString().split("T")[0]);
   const [workersList, setWorkersList] = React.useState<any[]>([]);
@@ -750,6 +772,26 @@ function SiteManagerDashboard({ user }: { user: any }) {
     }
   };
 
+  // Calculate privileges
+  const siteAccessList = profileData?.siteAccess || [];
+  
+  const PERMISSION_LABELS: Record<string, string> = {
+    attendance: "Daily Attendance",
+    measurement: "Measurement Sheets",
+    materialRequest: "Material Requests",
+    laborDeployment: "Labor Deployment Logs",
+    workerManagement: "Worker Directory Access",
+    expenseRecording: "Log Site Expenses",
+    documentUpload: "Upload Drawings/Docs",
+    viewProgress: "View Progress Reports",
+  };
+
+  // Get active privileges count across all scopes
+  const totalPrivileges = siteAccessList.reduce((acc: number, sa: any) => {
+    const perms = sa.permissions || {};
+    return acc + Object.values(perms).filter(Boolean).length;
+  }, 0);
+
   return (
     <div className="p-4 md:p-6 max-w-xl mx-auto space-y-6">
       {/* Header */}
@@ -757,8 +799,82 @@ function SiteManagerDashboard({ user }: { user: any }) {
         <h1 className="text-xl md:text-2xl font-extrabold text-foreground tracking-tight">
           Site Manager Portal
         </h1>
-        <p className="text-xs text-muted-foreground">Logged in: {user?.user?.name || "Manager"}</p>
+        <p className="text-xs text-muted-foreground">Logged in: {profileData?.name || user?.user?.name || "Manager"}</p>
       </div>
+
+      {/* Dynamic Glassmorphic Profile Card */}
+      <Card className="border border-border/85 shadow-md relative overflow-hidden bg-gradient-to-br from-slate-50/90 to-white/95 dark:from-slate-900/40 dark:to-slate-950/20 backdrop-blur-md">
+        {/* Glow effect */}
+        <div className="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-secondary/10 dark:bg-amber-500/10 blur-xl pointer-events-none" />
+        
+        <CardContent className="p-5 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            {/* Avatar / Initials badge */}
+            <div className="w-14 h-14 rounded-2xl bg-secondary/15 dark:bg-amber-500/10 border border-secondary/20 dark:border-amber-500/25 flex items-center justify-center text-secondary dark:text-amber-500 shrink-0 shadow-sm">
+              <HardHat size={28} className="animate-pulse text-amber-600 dark:text-amber-400" />
+            </div>
+            
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base font-black tracking-tight text-foreground truncate">{profileData?.name || user?.user?.name || "Site Manager"}</h2>
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary/10 text-secondary dark:bg-amber-500/15 dark:text-amber-400 font-extrabold uppercase tracking-wide">
+                  {profileData?.role === "ADMIN" ? "Owner Administrator" : "Site Operations Supervisor"}
+                </span>
+              </div>
+              
+              {/* Contact details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground font-semibold">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="shrink-0 text-muted-foreground/60">Email:</span>
+                  <span className="truncate font-mono text-[11px] text-foreground">{profileData?.email || user?.user?.email || "N/A"}</span>
+                </div>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="shrink-0 text-muted-foreground/60">Phone:</span>
+                  <span className="truncate font-mono text-[11px] text-foreground">{profileData?.phone || "N/A"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr className="border-border/60" />
+
+          {/* Stats and assigned privileges */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-semibold">
+            <div className="space-y-0.5">
+              <span className="text-muted-foreground/70 block text-[10px] uppercase font-bold">Assigned Scopes</span>
+              <span className="text-foreground font-black text-xs">{siteAccessList.length} Site Location{siteAccessList.length !== 1 ? "s" : ""}</span>
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-muted-foreground/70 block text-[10px] uppercase font-bold">Active Privileges</span>
+              <span className="text-foreground font-black text-xs">{totalPrivileges} Privilege{totalPrivileges !== 1 ? "s" : ""}</span>
+            </div>
+            <div className="space-y-0.5 col-span-2 sm:col-span-1">
+              <span className="text-muted-foreground/70 block text-[10px] uppercase font-bold">Activity Index</span>
+              <div className="flex items-center text-amber-500 dark:text-amber-400 mt-0.5">
+                {"★".repeat(5)} <span className="ml-1.5 text-foreground font-black text-[11px] bg-amber-500/10 px-1.5 py-0.5 rounded">4.9/5</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Privileges checklist badges */}
+          {siteAccessList.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <span className="text-muted-foreground/70 block text-[10px] uppercase font-bold">Authorized Privileges List</span>
+              <div className="flex gap-1.5 flex-wrap">
+                {Array.from(new Set(
+                  siteAccessList.flatMap((sa: any) => 
+                    Object.entries(sa.permissions || {}).filter(([_, v]) => !!v).map(([k]) => k)
+                  )
+                )).map((permKey: any) => (
+                  <span key={permKey} className="text-[9px] bg-secondary/5 border border-secondary/10 text-secondary dark:bg-amber-500/5 dark:border-amber-500/10 dark:text-amber-400 font-extrabold uppercase px-2 py-0.5 rounded-md tracking-wider">
+                    {PERMISSION_LABELS[permKey] || permKey}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {errorMsg && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 font-medium">

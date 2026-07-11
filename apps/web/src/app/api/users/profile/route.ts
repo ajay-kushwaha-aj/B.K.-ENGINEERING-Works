@@ -14,7 +14,15 @@ export async function GET(request: Request) {
 
     // Postgres path
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() }
+      where: { email: email.toLowerCase() },
+      include: {
+        siteAccess: {
+          include: {
+            contract: true,
+            site: true
+          }
+        }
+      }
     });
 
     if (!user) {
