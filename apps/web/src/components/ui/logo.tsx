@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 
 export interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -5,147 +7,60 @@ export interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   showText?: boolean;
 }
 
-export const Logo: React.FC<LogoProps> = ({ size = 48, showText = true, className = "", ...props }) => {
-  const imageSize = Math.round(size * 0.74);
+export const Logo: React.FC<LogoProps> = ({
+  size = 60,
+  showText = true,
+  className = "",
+  ...props
+}) => {
+  const [imgError, setImgError] = React.useState(false);
 
   return (
-    <div className={`flex items-center gap-3 logo-container select-none ${className}`} {...props}>
-      {/* Visual Icon Container */}
-      <div 
-        className="relative flex items-center justify-center flex-shrink-0"
+    <div
+      className={`flex items-center gap-4 select-none group transition-all duration-300 ${className}`}
+      {...props}
+    >
+      {/* 60x60 Clean White Circular Logo Container with Subtle Border */}
+      <div
+        className="relative flex items-center justify-center flex-shrink-0 rounded-full bg-white border border-slate-200/90 shadow-sm p-1 transition-transform duration-300 group-hover:scale-105"
         style={{ width: size, height: size }}
       >
-        {/* Animated Background SVG elements (gears and circles) */}
-        <svg
-          width={size}
-          height={size}
-          viewBox="0 0 100 100"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute inset-0 overflow-visible"
-        >
-          <defs>
-            <linearGradient id="logo-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FBBF24" />
-              <stop offset="50%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#D97706" />
-            </linearGradient>
-            <linearGradient id="logo-metal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#94A3B8" />
-              <stop offset="50%" stopColor="#475569" />
-              <stop offset="100%" stopColor="#1E293B" />
-            </linearGradient>
-          </defs>
-
-          <style>{`
-            @keyframes logo-spin-cw {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
-            }
-            @keyframes logo-spin-ccw {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(-360deg); }
-            }
-            @keyframes logo-pulse-glow {
-              0%, 100% {
-                transform: scale(1);
-                filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.4));
-              }
-              50% {
-                transform: scale(1.03);
-                filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.7));
-              }
-            }
-            .logo-outer-gear {
-              transform-origin: 50px 50px;
-              animation: logo-spin-cw 25s linear infinite;
-              transition: animation-duration 0.5s ease;
-            }
-            .logo-draft-circle {
-              transform-origin: 50px 50px;
-              animation: logo-spin-ccw 40s linear infinite;
-            }
-            .logo-center-img {
-              transform-origin: center;
-              animation: logo-pulse-glow 3s ease-in-out infinite;
-            }
-            .logo-container:hover .logo-outer-gear {
-              animation-duration: 8s;
-            }
-            .logo-container:hover .logo-draft-circle {
-              animation-duration: 10s;
-            }
-            .logo-container:hover .logo-center-img {
-              animation: logo-pulse-glow 1.2s ease-in-out infinite;
-            }
-          `}</style>
-
-          {/* Technical drafting outer dashed guide */}
-          <circle
-            cx="50"
-            cy="50"
-            r="48.5"
-            stroke="url(#logo-gold-grad)"
-            strokeWidth="0.8"
-            strokeDasharray="4 5"
-            opacity="0.35"
-            className="logo-draft-circle"
-          />
-
-          {/* Rotating outer gear teeth outline */}
-          <g className="logo-outer-gear">
-            {/* Gear Ring */}
-            <circle cx="50" cy="50" r="43" stroke="url(#logo-metal-grad)" strokeWidth="1.5" fill="none" opacity="0.6" />
-            <circle cx="50" cy="50" r="44.5" stroke="url(#logo-metal-grad)" strokeWidth="0.5" fill="none" opacity="0.25" />
-            {/* Gear teeth */}
-            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
-              <rect
-                key={`tooth-${deg}`}
-                x="48"
-                y="3"
-                width="4"
-                height="5"
-                rx="1"
-                fill="url(#logo-metal-grad)"
-                opacity="0.8"
-                transform={`rotate(${deg} 50 50)`}
-              />
-            ))}
-          </g>
-
-          {/* Inner golden ring framing the logo */}
-          <circle
-            cx="50"
-            cy="50"
-            r="37"
-            stroke="url(#logo-gold-grad)"
-            strokeWidth="1.5"
-            fill="none"
-            opacity="0.8"
-          />
-        </svg>
-
-        {/* The Actual Logo Image centered inside */}
-        <div 
-          className="absolute logo-center-img flex items-center justify-center rounded-full bg-white p-0.5 overflow-hidden border border-border/50 shadow-sm"
-          style={{ width: imageSize, height: imageSize }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+        {!imgError ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src="/logo.png"
             alt="B.K. Engineering Works Logo"
+            onError={() => setImgError(true)}
             className="w-full h-full object-contain rounded-full"
           />
-        </div>
+        ) : (
+          /* Vector Fallback Emblem if PNG fails to load */
+          <svg viewBox="0 0 100 100" fill="none" className="w-full h-full">
+            <circle cx="50" cy="50" r="44" stroke="#D4AF37" strokeWidth="3" fill="none" />
+            <circle cx="50" cy="50" r="36" stroke="#0F172A" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
+            <path
+              d="M34 32 H54 C60 32 64 36 64 41 C64 45 61 48 56 49.5 C62 51 65 55 65 60 C65 66 60 70 53 70 H34 V32 Z"
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path d="M44 32 V70 M34 50 H54" stroke="#0F172A" strokeWidth="3.5" strokeLinecap="round" />
+          </svg>
+        )}
       </div>
 
+      {/* Two Line Official Company Typography */}
       {showText && (
-        <div className="flex flex-col justify-center leading-none">
-          <span className="text-[15px] font-black tracking-widest text-slate-100 uppercase">
-            B.K. <span className="text-secondary font-black">ENGINEERING</span>
+        <div className="flex flex-col justify-center leading-none transition-opacity duration-300">
+          {/* Line 1: B.K. ENGINEERING (Bold 700, 22px, White) */}
+          <span className="text-[20px] lg:text-[22px] font-bold text-white tracking-tight uppercase leading-none font-sans font-[700] whitespace-nowrap">
+            B.K. ENGINEERING
           </span>
-          <span className="text-[9px] tracking-[0.38em] text-muted-foreground uppercase font-bold mt-1">
-            Works
+          {/* Line 2: WORKS (Medium 500, 14px, 4px Letter Spacing, #94A3B8) */}
+          <span className="text-[14px] font-medium text-[#94A3B8] uppercase tracking-[4px] leading-none font-[500] mt-1.5 whitespace-nowrap">
+            WORKS
           </span>
         </div>
       )}

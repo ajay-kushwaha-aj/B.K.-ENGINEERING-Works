@@ -31,8 +31,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               }
               props.onFocus?.(e);
             }}
-            className={`h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
-              error ? "border-danger focus:ring-danger/50 focus:border-danger" : ""
+            className={`h-11 w-full rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-slate-100 placeholder:text-slate-400/80 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 shadow-xs transition-all disabled:cursor-not-allowed disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:border-slate-200 dark:disabled:border-slate-800 disabled:text-slate-400 ${
+              error ? "border-red-500 focus:ring-red-500/50 focus:border-red-500" : ""
             } ${isPassword ? "pr-10" : ""} ${className}`}
             {...props}
           />
@@ -77,8 +77,8 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={inputId}
           ref={ref}
           rows={rows}
-          className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
-            error ? "border-danger focus:ring-danger/50" : ""
+          className={`w-full rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-slate-100 placeholder:text-slate-400/80 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 shadow-xs transition-all disabled:cursor-not-allowed disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:border-slate-200 dark:disabled:border-slate-800 disabled:text-slate-400 ${
+            error ? "border-red-500 focus:ring-red-500/50" : ""
           } ${className}`}
           {...props}
         />

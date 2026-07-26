@@ -49,6 +49,10 @@ export async function GET() {
       currentMonthSlips,
       leaveAttendance,
       inactiveWorkers,
+      totalWorkersCount,
+      presentWorkersCount,
+      activeSitesCount,
+      sitesList,
       chartS1, chartC1,
       chartS2, chartC2,
       chartS3, chartC3,
@@ -123,6 +127,20 @@ export async function GET() {
       // 12. Inactive workers count
       prisma.worker.count({
         where: { status: "ON_LEAVE" }
+      }),
+      // 13. Total workers count
+      prisma.worker.count(),
+      // 14. Present workers today count
+      prisma.attendance.count({
+        where: { date: { gte: todayStart, lte: todayEnd }, status: "PRESENT" }
+      }),
+      // 15. Active sites count
+      prisma.site.count(),
+      // 16. Real sites list from DB
+      prisma.site.findMany({
+        take: 5,
+        include: { contract: true },
+        orderBy: { createdAt: "desc" }
       }),
 
       // 6 month chart queries
@@ -261,6 +279,10 @@ export async function GET() {
       payrollPaid,
       payrollPending,
       workersOnLeaveToday,
+      totalWorkersCount,
+      presentWorkersCount,
+      activeSitesCount,
+      sitesList,
     });
   } catch (error: any) {
 

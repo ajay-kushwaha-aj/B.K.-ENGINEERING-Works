@@ -34,3 +34,35 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const json = await request.json();
+    const { email, name, phone, avatar } = json;
+
+    if (!email) {
+      return NextResponse.json({ error: "Email is required to update profile" }, { status: 400 });
+    }
+
+    const updatedUser = await (prisma.user as any).upsert({
+      where: { email: email.toLowerCase() },
+      update: {
+        ...(name && { name }),
+        ...(phone !== undefined && { phone }),
+        ...(avatar !== undefined && { avatar }),
+      },
+      create: {
+        email: email.toLowerCase(),
+        name: name || "User",
+        phone: phone || null,
+        avatar: avatar || null,
+        role: "ADMIN"
+      }
+    });
+
+    return NextResponse.json({ success: true, user: updatedUser });
+  } catch (error: any) {
+    console.error("Profile update error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

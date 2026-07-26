@@ -34,23 +34,23 @@
 }
 
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #0f172a;
   
-  --card: #f8fafc;
+  --card: #ffffff;
   --card-foreground: #0f172a;
   
   --popover: #ffffff;
   --popover-foreground: #0f172a;
   
   --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted-foreground: #475569;
   
-  --accent: #f1f5f9;
+  --accent: #e2e8f0;
   --accent-foreground: #0f172a;
   
-  --border: #e2e8f0;
-  --input: #e2e8f0;
+  --border: #cbd5e1;
+  --input: #cbd5e1;
   --ring: #4b5563;
   
   --radius: 12px;
